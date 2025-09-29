@@ -1,0 +1,40 @@
+{
+  "endOfLine": "lf",
+  "printWidth": 90,
+  "tabWidth": 2,
+  "useTabs": false,
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      "options": {
+        "semi": false,
+        "singleQuote": true,
+        "trailingComma": "es5",
+        "tailwindConfig": "./web/tailwind.config.js",
+        "tailwindFunctions": ["tw"],
+        "tailwindStylesheet": "./web/app/globals.css"
+      }
+    },
+    {
+      "files": "*.css",
+      "options": {
+        "printWidth": 180
+      }
+    },
+    {
+      "files": "*.sql",
+      "options": {
+        "dataTypeCase": "upper",
+        "functionCase": "upper",
+        "identifierCase": "upper",
+        "keywordCase": "upper",
+        "language": "postgresql"
+      }
+    }
+  ],
+  "plugins": [
+    "prettier-plugin-sql",
+    "prettier-plugin-organize-imports",
+    "prettier-plugin-tailwindcss"
+  ]
+}

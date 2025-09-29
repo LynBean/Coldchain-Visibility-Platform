@@ -1,0 +1,17 @@
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm
+
+RUN useradd -ms /bin/sh -u 1001 app
+USER app
+
+WORKDIR /app
+COPY --chown=app:app . .
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ENV=development
+
+EXPOSE 5000 5678
+
+ENTRYPOINT [ "sh", "-c", \
+    "uv sync --locked && .venv/bin/python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 -m uvicorn main:app --host 0.0.0.0 --port 5000 --reload" \
+    ]

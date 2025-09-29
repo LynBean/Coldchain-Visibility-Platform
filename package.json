@@ -1,0 +1,27 @@
+{
+  "name": "coldchain-visibility-platform-utils",
+  "private": true,
+  "workspaces": [
+    "web"
+  ],
+  "scripts": {
+    "format": "npx prettier . --write --ignore-path .prettierignore; cd core; uv run ruff format",
+    "typecheck": "cd web; npm run typecheck; cd ../core; uv run ty check",
+    "supabase:start": "npx supabase start",
+    "supabase:stop": "npx supabase stop",
+    "supabase:db-diff": "npm run supabase:start; npx supabase db diff -f latest",
+    "supabase:migration-up": "npx supabase migration up",
+    "web:graphql-codegen": "cd web; npm run graphql-codegen",
+    "dev": "npm run supabase:start; docker compose -f docker-compose.dev.yml up --no-recreate --build --watch",
+    "dev:down": "docker compose -f docker-compose.dev.yml down; npm run supabase:stop",
+    "dev:clean": "rm -rf node_modules; cd web; rm -rf node_modules; sudo rm -rf .next; cd ../core; rm -rf .venv",
+    "dev:install": "npm install; cd web; npm install; cd ../core; uv sync"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.2.0",
+    "prettier-plugin-sql": "^0.19.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "supabase": "^2.34.3"
+  }
+}

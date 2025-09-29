@@ -1,0 +1,17 @@
+{
+  "editor.tabSize": 2,
+  "files.exclude": {
+    ".next": true,
+    "**/.DS_Store": true,
+    "**/.git": true,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/node_modules": true,
+    "**/Thumbs.db": true,
+    "certificates": true
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["className\\s*:\\s*['\"]([^'\"]*)['\"]"],
+    ["tw`([^`]*)`"]
+  ]
+}

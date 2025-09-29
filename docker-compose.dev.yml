@@ -1,0 +1,54 @@
+name: coldchain-visibility-platform
+
+services:
+  web:
+    container_name: coldchain-visibility-platform-web
+    image: ghcr.io/lynbean/coldchain-visibility-platform/web:latest
+    build:
+      context: web
+      dockerfile: Dockerfile.dev
+    develop:
+      watch:
+        - path: web
+          target: /app
+          action: sync
+        - path: web/package.json
+          target: /app/package.json
+          action: sync+restart
+
+    networks:
+      - supabase_network_coldchain-visibility-platform
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+
+  core:
+    container_name: coldchain-visibility-platform-core
+    image: ghcr.io/lynbean/coldchain-visibility-platform/core:latest
+    build:
+      context: core
+      dockerfile: Dockerfile.dev
+    develop:
+      watch:
+        - path: core
+          target: /app
+          action: sync
+        - path: core/uv.lock
+          target: /app/uv.lock
+          action: sync+restart
+
+    networks:
+      - supabase_network_coldchain-visibility-platform
+    ports:
+      - 5000:5000
+      - 5678:5678
+    restart: unless-stopped
+    environment:
+      WEB_URL: https://127.0.0.1:3000
+      SUPABASE_URL: http://supabase_kong_coldchain-visibility-platform:8000
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      SUPABASE_DB_URL: postgresql://postgres:postgres@supabase_db_coldchain-visibility-platform:5432/postgres
+
+networks:
+  supabase_network_coldchain-visibility-platform:
+    external: true
