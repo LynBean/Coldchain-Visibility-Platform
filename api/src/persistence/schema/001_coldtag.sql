@@ -19,7 +19,6 @@ ALTER TABLE "update_core_coldtag" ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE "create_node_coldtag" (
   "id" SERIAL PRIMARY KEY,
-  "core_coldtag_id" INT NOT NULL REFERENCES "create_core_coldtag" (ID),
   "mac_address" TEXT UNIQUE NOT NULL,
   "identifier" TEXT,
   "time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -30,7 +29,6 @@ ALTER TABLE "create_node_coldtag" ENABLE ROW LEVEL SECURITY;
 CREATE TABLE "update_node_coldtag" (
   "id" SERIAL PRIMARY KEY,
   "node_coldtag_id" INT NOT NULL REFERENCES "create_node_coldtag" (ID),
-  "core_coldtag_id" INT REFERENCES "create_core_coldtag" (ID),
   "identifier" TEXT,
   "deleted" BOOLEAN,
   "time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -96,22 +94,6 @@ CREATE VIEW "node_coldtag" AS (
   SELECT
     CNC.ID,
     CNC.MAC_ADDRESS,
-    COALESCE(
-      (
-        SELECT
-          UNC.CORE_COLDTAG_ID
-        FROM
-          "update_node_coldtag" UNC
-        WHERE
-          UNC.NODE_COLDTAG_ID = CNC.ID
-          AND UNC.CORE_COLDTAG_ID IS NOT NULL
-        ORDER BY
-          UNC.TIME DESC
-        LIMIT
-          1
-      ),
-      CNC.CORE_COLDTAG_ID
-    ) AS "core_coldtag_id",
     COALESCE(
       (
         SELECT
