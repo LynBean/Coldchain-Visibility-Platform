@@ -22,7 +22,7 @@ class PersistedCoreColdtagEvent(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     id: str
-    coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
     connection_status: ColdtagConnectionStatusEnum
     event_time: datetime
     time: datetime
@@ -31,14 +31,14 @@ class PersistedCoreColdtagEvent(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: CoreColdtagEventSchema, /
     ) -> "PersistedCoreColdtagEvent":
-        async def retrieve_coldtag() -> PersistedCoreColdtag:
-            persisted_coldtag = await coldtag_persistence.find_core_by_id(str(data.id))
-            assert persisted_coldtag is not None
-            return persisted_coldtag
+        async def retrieve_core_coldtag() -> PersistedCoreColdtag:
+            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            assert persisted_core_coldtag is not None
+            return persisted_core_coldtag
 
         return PersistedCoreColdtagEvent(
             id=str(data.id),
-            coldtag=retrieve_coldtag,
+            core_coldtag=retrieve_core_coldtag,
             connection_status=data.connection_status,
             event_time=data.event_time,
             time=data.time,
@@ -49,7 +49,8 @@ class PersistedNodeColdtagEvent(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     id: str
-    coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
+    node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
     connection_status: ColdtagConnectionStatusEnum
     temperature: float | None
     humidity: float | None
@@ -62,14 +63,20 @@ class PersistedNodeColdtagEvent(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: NodeColdtagEventSchema, /
     ) -> "PersistedNodeColdtagEvent":
-        async def retrieve_coldtag() -> PersistedNodeColdtag:
-            persisted_coldtag = await coldtag_persistence.find_node_by_id(str(data.id))
-            assert persisted_coldtag is not None
-            return persisted_coldtag
+        async def retrieve_node_coldtag() -> PersistedNodeColdtag:
+            persisted_node_coldtag = await coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
+            assert persisted_node_coldtag is not None
+            return persisted_node_coldtag
+
+        async def retrieve_core_coldtag() -> PersistedCoreColdtag:
+            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            assert persisted_core_coldtag is not None
+            return persisted_core_coldtag
 
         return PersistedNodeColdtagEvent(
             id=str(data.id),
-            coldtag=retrieve_coldtag,
+            node_coldtag=retrieve_node_coldtag,
+            core_coldtag=retrieve_core_coldtag,
             connection_status=data.connection_status,
             temperature=data.temperature,
             humidity=data.humidity,
@@ -84,7 +91,8 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     id: str
-    coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
+    node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
     connection_status: ColdtagConnectionStatusEnum
     latitude: float | None
     longitude: float | None
@@ -95,14 +103,20 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: NodeColdtagEventAlertLiquidSchema, /
     ) -> "PersistedNodeColdtagEventAlertLiquid":
-        async def retrieve_coldtag() -> PersistedNodeColdtag:
-            persisted_coldtag = await coldtag_persistence.find_node_by_id(str(data.id))
-            assert persisted_coldtag is not None
-            return persisted_coldtag
+        async def retrieve_node_coldtag() -> PersistedNodeColdtag:
+            persisted_node_coldtag = await coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
+            assert persisted_node_coldtag is not None
+            return persisted_node_coldtag
+
+        async def retrieve_core_coldtag() -> PersistedCoreColdtag:
+            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            assert persisted_core_coldtag is not None
+            return persisted_core_coldtag
 
         return PersistedNodeColdtagEventAlertLiquid(
             id=str(data.id),
-            coldtag=retrieve_coldtag,
+            node_coldtag=retrieve_node_coldtag,
+            core_coldtag=retrieve_core_coldtag,
             connection_status=data.connection_status,
             latitude=data.latitude,
             longitude=data.longitude,
@@ -115,7 +129,8 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     id: str
-    coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
+    node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
     connection_status: ColdtagConnectionStatusEnum
     latitude: float | None
     longitude: float | None
@@ -126,14 +141,20 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: NodeColdtagEventAlertImpactSchema, /
     ) -> "PersistedNodeColdtagEventAlertImpact":
-        async def retrieve_coldtag() -> PersistedNodeColdtag:
-            persisted_coldtag = await coldtag_persistence.find_node_by_id(str(data.id))
-            assert persisted_coldtag is not None
-            return persisted_coldtag
+        async def retrieve_node_coldtag() -> PersistedNodeColdtag:
+            persisted_node_coldtag = await coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
+            assert persisted_node_coldtag is not None
+            return persisted_node_coldtag
+
+        async def retrieve_core_coldtag() -> PersistedCoreColdtag:
+            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            assert persisted_core_coldtag is not None
+            return persisted_core_coldtag
 
         return PersistedNodeColdtagEventAlertImpact(
             id=str(data.id),
-            coldtag=retrieve_coldtag,
+            node_coldtag=retrieve_node_coldtag,
+            core_coldtag=retrieve_core_coldtag,
             connection_status=data.connection_status,
             latitude=data.latitude,
             longitude=data.longitude,
@@ -147,7 +168,6 @@ class PersistedNodeColdtag(BaseModel):
 
     id: str
     mac_address: str
-    core: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
     identifier: str | None
     events: Callable[
         ...,
@@ -167,11 +187,6 @@ class PersistedNodeColdtag(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: NodeColdtagSchema, /
     ) -> "PersistedNodeColdtag":
-        async def retrieve_core() -> "PersistedCoreColdtag":
-            persisted_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
-            assert persisted_coldtag is not None
-            return persisted_coldtag
-
         async def retrieve_events() -> list[
             PersistedNodeColdtagEvent | PersistedNodeColdtagEventAlertLiquid | PersistedNodeColdtagEventAlertImpact
         ]:
@@ -184,7 +199,6 @@ class PersistedNodeColdtag(BaseModel):
         return PersistedNodeColdtag(
             id=str(data.id),
             mac_address=data.mac_address,
-            core=retrieve_core,
             identifier=data.identifier,
             events=retrieve_events,
             deleted=bool(data.deleted),

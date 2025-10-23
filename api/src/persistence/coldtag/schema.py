@@ -16,7 +16,6 @@ class CoreColdtagSchema(BaseModel):
 class NodeColdtagSchema(BaseModel):
     id: int
     mac_address: str
-    core_coldtag_id: int
     identifier: str | None
     deleted: bool | None
     created_time: datetime
@@ -39,6 +38,7 @@ class CoreColdtagEventSchema(BaseModel):
 class NodeColdtagEventSchema(BaseModel):
     id: int
     node_coldtag_id: int
+    core_coldtag_id: int
     connection_status: ColdtagConnectionStatusEnum
     temperature: float | None
     humidity: float | None
@@ -51,6 +51,7 @@ class NodeColdtagEventSchema(BaseModel):
 class NodeColdtagEventAlertLiquidSchema(BaseModel):
     id: int
     node_coldtag_id: int
+    core_coldtag_id: int
     connection_status: ColdtagConnectionStatusEnum
     latitude: float | None
     longitude: float | None
@@ -61,6 +62,7 @@ class NodeColdtagEventAlertLiquidSchema(BaseModel):
 class NodeColdtagEventAlertImpactSchema(BaseModel):
     id: int
     node_coldtag_id: int
+    core_coldtag_id: int
     connection_status: ColdtagConnectionStatusEnum
     latitude: float | None
     longitude: float | None

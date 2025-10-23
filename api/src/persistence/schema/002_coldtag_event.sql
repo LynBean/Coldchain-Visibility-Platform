@@ -13,6 +13,7 @@ ALTER TABLE "core_coldtag_event" ENABLE ROW LEVEL SECURITY;
 CREATE TABLE "node_coldtag_event" (
   "id" SERIAL PRIMARY KEY,
   "node_coldtag_id" INT NOT NULL REFERENCES "create_node_coldtag" (ID),
+  "core_coldtag_id" INT NOT NULL REFERENCES "create_core_coldtag" (ID),
   "connection_status" COLDTAG_CONNECTION_STATUS NOT NULL,
   "temperature" DOUBLE PRECISION,
   "humidity" DOUBLE PRECISION,
@@ -27,6 +28,7 @@ ALTER TABLE "node_coldtag_event" ENABLE ROW LEVEL SECURITY;
 CREATE TABLE "node_coldtag_event_alert_liquid" (
   "id" SERIAL PRIMARY KEY,
   "node_coldtag_id" INT NOT NULL REFERENCES "create_node_coldtag" (ID),
+  "core_coldtag_id" INT NOT NULL REFERENCES "create_core_coldtag" (ID),
   "connection_status" COLDTAG_CONNECTION_STATUS NOT NULL,
   "latitude" DOUBLE PRECISION,
   "longitude" DOUBLE PRECISION,
@@ -39,6 +41,7 @@ ALTER TABLE "node_coldtag_event_alert_liquid" ENABLE ROW LEVEL SECURITY;
 CREATE TABLE "node_coldtag_event_alert_impact" (
   "id" SERIAL PRIMARY KEY,
   "node_coldtag_id" INT NOT NULL REFERENCES "create_node_coldtag" (ID),
+  "core_coldtag_id" INT NOT NULL REFERENCES "create_core_coldtag" (ID),
   "connection_status" COLDTAG_CONNECTION_STATUS NOT NULL,
   "latitude" DOUBLE PRECISION,
   "longitude" DOUBLE PRECISION,
