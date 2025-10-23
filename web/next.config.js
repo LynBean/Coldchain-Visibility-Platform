@@ -14,10 +14,10 @@ const config = {
       },
       {
         protocol: 'http',
-        hostname: 'supabase_kong_soonlinmas-warehouse',
+        hostname: 'supabase_kong_coldchain-visibility-platform',
       },
     ],
   },
 }
 
-module.exports = config
+export default config

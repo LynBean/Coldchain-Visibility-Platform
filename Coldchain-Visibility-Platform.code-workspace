@@ -5,16 +5,12 @@
       "path": ".",
     },
     {
-      "name": "airtag",
-      "path": "./airtag",
-    },
-    {
       "name": "web",
       "path": "./web",
     },
     {
-      "name": "core",
-      "path": "./core",
+      "name": "api",
+      "path": "./api",
     },
     {
       "name": "supabase",

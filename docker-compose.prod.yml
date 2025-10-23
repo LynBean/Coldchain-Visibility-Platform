@@ -3,24 +3,17 @@ name: coldchain-visibility-platform
 services:
   web:
     container_name: coldchain-visibility-platform-web
-    image: ghcr.io/lynbean/coldchain-visibility-platform/web:latest
+    image: ghcr.io/lynbean/coldchain-visibility-platform/web:${DOCKER_IMAGE_TAG:-latest}
     build:
       context: web
       dockerfile: Dockerfile.prod
 
     depends_on:
-      core:
+      api:
         condition: service_healthy
     healthcheck:
       test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://127.0.0.1:3000",
-        ]
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
       timeout: 20s
       interval: 20s
       retries: 2
@@ -30,22 +23,15 @@ services:
       - 3000:3000
     restart: always
 
-  core:
-    container_name: coldchain-visibility-platform-core
-    image: ghcr.io/lynbean/coldchain-visibility-platform/core:latest
+  api:
+    container_name: coldchain-visibility-platform-api
+    image: ghcr.io/lynbean/coldchain-visibility-platform/api:${DOCKER_IMAGE_TAG:-latest}
     build:
-      context: core
+      context: api
       dockerfile: Dockerfile.prod
 
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-versbose",
-          "--tries=1",
-          "http://127.0.0.1:5000/health",
-        ]
+      test: ["CMD", "wget", "--no-versbose", "--tries=1", "http://127.0.0.1:5000/health"]
       timeout: 20s
       interval: 20s
       retries: 2
@@ -55,10 +41,20 @@ services:
       - 5000:5000
     restart: always
     environment:
-      WEB_URL:
-      SUPABASE_URL:
-      SUPABASE_SERVICE_ROLE_KEY:
-      SUPABASE_DB_URL:
+      WEB_URL: https://coldchain.xoxatlantis.org
+      SUPABASE_URL: https://kqicwbzqfievhpaodmxe.supabase.co
+      SUPABASE_SECRET_KEY: sb_secret_ciY7mhR7mLNjbd0txoF_2Q_q5_pai5J
+      SUPABASE_DB_URL: postgresql://postgres.kqicwbzqfievhpaodmxe:xllnhtAf7kVHs4xl@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+      REDIS_URL: redis://redis:6379
+
+  redis:
+    container_name: coldchain-visibility-platform-redis
+    image: redis:8
+    networks:
+      - coldchain-visibility-platform
+    ports:
+      - 6379:6379
+    restart: always
 
 networks:
   coldchain-visibility-platform:

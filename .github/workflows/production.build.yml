@@ -35,9 +35,9 @@ jobs:
 
       - name: Spin-up API server
         run: |
-          docker compose -f docker-compose.prod.yml up core -d --build
+          docker compose -f docker-compose.prod.yml up api -d --build
           for i in {1..100}; do
-              CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q core)
+              CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q api)
               STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$CONTAINER_ID")
               echo "--- Logs (attempt $i) ($STATUS) ---"
               docker logs --tail 10 "$CONTAINER_ID"
@@ -61,13 +61,13 @@ jobs:
           push: true
           tags: ghcr.io/lynbean/coldchain-visibility-platform/web:latest
 
-      - name: Build and Push Core Image
+      - name: Build and Push API Image
         uses: docker/build-push-action@v6
         with:
-          context: ./core
-          file: ./core/Dockerfile.prod
+          context: ./api
+          file: ./api/Dockerfile.prod
           push: true
-          tags: ghcr.io/lynbean/coldchain-visibility-platform/core:latest
+          tags: ghcr.io/lynbean/coldchain-visibility-platform/api:latest
 
   test:
     needs: build

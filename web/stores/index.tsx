@@ -1,15 +1,9 @@
 import * as React from 'react'
-import { Provider as AuthenticationProvider } from './authentication'
-import { Provider as ErrorProvider } from './error'
-import { Provider as GraphQLClientProvider } from './graphql'
-import { Provider as SupabaseProvider } from './supabase'
+import { Provider as ErrorProvider } from './error.tsx'
+import { Provider as GraphQLClientProvider } from './graphql/index.tsx'
+import { Provider as SupabaseProvider } from './supabase.tsx'
 
-const providers = [
-  ErrorProvider,
-  SupabaseProvider,
-  GraphQLClientProvider,
-  AuthenticationProvider,
-]
+const providers = [ErrorProvider, SupabaseProvider, GraphQLClientProvider]
 
 const Provider: React.FunctionComponent<React.PropsWithChildren> = (props) => {
   return providers.reduceRight(

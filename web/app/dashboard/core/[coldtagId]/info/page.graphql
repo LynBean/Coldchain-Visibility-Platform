@@ -1,0 +1,46 @@
+query CVP_DashboardCoreInfo_DisplayCoreColdtagById($coreId: ID!) {
+  displayCoreColdtag {
+    byId(coreId: $coreId) {
+      id
+      macAddress
+      identifier
+      nodes {
+        id
+        macAddress
+        identifier
+        events {
+          basic {
+            id
+            connectionStatus
+            temperature
+            humidity
+            latitude
+            longitude
+            eventTime
+          }
+          alertLiquid {
+            id
+            connectionStatus
+            latitude
+            longitude
+            eventTime
+          }
+          alertImpact {
+            id
+            connectionStatus
+            latitude
+            longitude
+            eventTime
+          }
+        }
+      }
+      events {
+        basic {
+          id
+          connectionStatus
+          eventTime
+        }
+      }
+    }
+  }
+}

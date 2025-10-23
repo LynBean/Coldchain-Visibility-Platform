@@ -1,0 +1,64 @@
+[project]
+name = "coldchain-visibility-platform-api"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.13, <3.14"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi>=0.116.1",
+    "loguru>=0.7.3",
+    "numpy>=2.3.2",
+    "redis>=6.4.0",
+    "strawberry-graphql[fastapi]>=0.278.1",
+    "supabase>=2.18.1",
+    "uvicorn[standard]>=0.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "debugpy>=1.8.16",
+    "ruff>=0.12.8",
+    "ty>=0.0.1a17",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = []
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py312"
+fix = true
+src = [".", "src", "test"]
+extend-include = ["*.ipynb"]
+extend-exclude = [".venv"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "COM812",
+    "D10",
+    "D203",
+    "D212",
+    "ERA001",
+    "PGH003",
+    "PLR0913",
+    "S101",
+    "TD",
+]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ty.src]
+include = ["src"]

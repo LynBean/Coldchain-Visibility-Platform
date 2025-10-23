@@ -8,11 +8,11 @@ import {
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { observableToAsyncIterable } from '@graphql-tools/utils'
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs'
-import { DocumentNode } from 'graphql'
+import { DocumentNode, Kind, OperationDefinitionNode } from 'graphql'
 import { createClient as createWSClient } from 'graphql-ws'
 import React from 'react'
-import { useSupabaseState } from '../supabase'
-import { getSdk } from './generated'
+import { useSupabaseState } from '../supabase.tsx'
+import { getSdk } from './generated.ts'
 
 const inMemoryCache = new InMemoryCache()
 
@@ -41,9 +41,12 @@ const createGraphQLClient = ({
       vars?: V,
       options?: { keepAlive?: number; fetchPolicy?: FetchPolicy }
     ) => {
-      const definition = doc.definitions.find((def) => def.kind === 'OperationDefinition')
+      const definition = doc.definitions.find(
+        (def): def is OperationDefinitionNode => def.kind === Kind.OPERATION_DEFINITION
+      )
 
       if (definition?.operation === 'query' || definition?.operation === 'mutation') {
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise<R>(async (resolve, reject) => {
           const client = new ApolloClient({
             cache: inMemoryCache,

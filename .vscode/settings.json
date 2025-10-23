@@ -6,8 +6,7 @@
     "**/.svn": true,
     "**/node_modules": true,
     "**/Thumbs.db": true,
-    "airtag": true,
-    "core": true,
+    "api": true,
     "supabase": true,
     "web": true
   }

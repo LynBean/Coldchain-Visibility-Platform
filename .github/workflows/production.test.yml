@@ -23,18 +23,18 @@ jobs:
           docker compose -f docker-compose.prod.yml up -d
           for i in {1..100}; do
               WEB_CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q web)
-              CORE_CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q core)
+              API_CONTAINER_ID=$(docker compose -f docker-compose.prod.yml ps -q api)
 
               WEB_STATUS="$(docker inspect --format='{{.State.Health.Status}}' "$WEB_CONTAINER_ID")"
-              CORE_STATUS="$(docker inspect --format='{{.State.Health.Status}}' "$CORE_CONTAINER_ID")"
+              API_STATUS="$(docker inspect --format='{{.State.Health.Status}}' "$API_CONTAINER_ID")"
 
               echo "--- Logs (attempt $i) (web:$WEB_STATUS) ---"
               docker logs --tail 10 "$WEB_CONTAINER_ID"
 
-              echo "--- Logs (attempt $i) (core:$CORE_STATUS) ---"
-              docker logs --tail 10 "$CORE_CONTAINER_ID"
+              echo "--- Logs (attempt $i) (api:$API_STATUS) ---"
+              docker logs --tail 10 "$API_CONTAINER_ID"
 
-              if [ "$WEB_STATUS" = "healthy" ] && [ "$CORE_STATUS" = "healthy" ]; then
+              if [ "$WEB_STATUS" = "healthy" ] && [ "$API_STATUS" = "healthy" ]; then
                 exit 0
               fi
 

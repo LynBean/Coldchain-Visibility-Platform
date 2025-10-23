@@ -1,4 +1,5 @@
 import React from 'react'
+import { toast } from 'sonner'
 
 type ErrorState = {
   errors: {
@@ -24,6 +25,7 @@ export const Provider: React.FunctionComponent<React.PropsWithChildren> = (props
   const timers = React.useRef<Record<string, NodeJS.Timeout>>({})
 
   const catchError = React.useCallback((error: Error | object) => {
+    toast.error(JSON.stringify(error), {action: []})
     const id = crypto.randomUUID()
     setState((state) => ({
       ...state,
@@ -48,19 +50,6 @@ export const Provider: React.FunctionComponent<React.PropsWithChildren> = (props
       }))
     }, 8000)
   }, [])
-
-  React.useEffect(() => {
-    if (state.errors.length <= 3) {
-      return
-    }
-    const id = state.errors[0].id
-    clearTimeout(timers.current[id])
-    setState((state) => ({
-      ...state,
-      errors: state.errors.filter((error) => error.id !== id),
-    }))
-    delete timers.current[id]
-  }, [state.errors])
 
   return (
     <errorContext.Provider value={[state, { catchError }]}>
