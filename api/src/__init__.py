@@ -14,7 +14,7 @@ from supabase import create_async_client as create_supabase_client
 
 from src.persistence.coldtag import ColdtagPersistence
 
-from .route import AppSchema, create_context
+from .route import create_context, create_schema
 
 ENV: Literal["development", "production"] = cast(
     "Literal['development', 'production']",
@@ -63,7 +63,7 @@ app.add_middleware(
 
 app.include_router(
     router=GraphQLRouter(
-        schema=AppSchema,
+        schema=create_schema(),
         context_getter=create_context(app, env=ENV),
         multipart_uploads_enabled=True,
         subscription_protocols=[GRAPHQL_TRANSPORT_WS_PROTOCOL, GRAPHQL_WS_PROTOCOL],

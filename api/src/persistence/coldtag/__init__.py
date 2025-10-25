@@ -45,7 +45,7 @@ __all__ = [
 ]
 
 
-def is_valid_mac_address(address: str, /) -> bool:
+def _is_valid_mac_address(address: str, /) -> bool:
     return bool(re.fullmatch(r"^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", address))
 
 
@@ -115,8 +115,11 @@ class ColdtagPersistence(BasePersistence):
             return [CoreColdtagSchema(**row) for row in rows]
 
         core_coldtag_schemas = await self._commit(__query)
-        return await asyncio.gather(
-            *[PersistedCoreColdtag.construct_model(self, schema) for schema in core_coldtag_schemas]
+        return cast(
+            "list[PersistedCoreColdtag]",
+            await asyncio.gather(
+                *[PersistedCoreColdtag.construct_model(self, schema) for schema in core_coldtag_schemas]
+            ),
         )
 
     async def find_core_by_id(self, coldtag_id: str, /) -> PersistedCoreColdtag | None:
@@ -152,8 +155,11 @@ class ColdtagPersistence(BasePersistence):
             return [NodeColdtagSchema(**row) for row in rows]
 
         node_coldtag_schemas = await self._commit(__query)
-        return await asyncio.gather(
-            *[PersistedNodeColdtag.construct_model(self, schema) for schema in node_coldtag_schemas]
+        return cast(
+            "list[PersistedNodeColdtag]",
+            await asyncio.gather(
+                *[PersistedNodeColdtag.construct_model(self, schema) for schema in node_coldtag_schemas]
+            ),
         )
 
     async def find_node_by_id(self, coldtag_id: str, /) -> PersistedNodeColdtag | None:
@@ -178,25 +184,6 @@ class ColdtagPersistence(BasePersistence):
             return None
 
         return await PersistedNodeColdtag.construct_model(self, node_coldtag_schema)
-
-    async def find_nodes_by_core_id(self, core_id: str, /) -> list[PersistedNodeColdtag]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtag]:
-            rows = await client.fetch(
-                """
-                SELECT * FROM node_coldtag
-                WHERE core_coldtag_id = $1
-                """,
-                int(core_id),
-            )
-
-            return cast(
-                "list[PersistedNodeColdtag]",
-                await asyncio.gather(
-                    *[PersistedNodeColdtag.construct_model(self, NodeColdtagSchema(**row)) for row in rows]
-                ),
-            )
-
-        return await self._commit(__query)
 
     async def find_core_events_by_core_id(self, core_id: str, /) -> list[PersistedCoreColdtagEvent]:
         async def __query(client: PgConnection) -> list[PersistedCoreColdtagEvent]:
@@ -289,7 +276,7 @@ class ColdtagPersistence(BasePersistence):
         return await self._commit(__query)
 
     async def create_core(self, *, mac_address: str, identifier: str | None = None) -> PersistedCoreColdtag:
-        assert is_valid_mac_address(mac_address), "Invalid MAC Address."
+        assert _is_valid_mac_address(mac_address), "Invalid MAC Address."
 
         async def __query(client: PgConnection) -> CoreColdtagSchema:
             core_id = cast(
@@ -366,10 +353,8 @@ class ColdtagPersistence(BasePersistence):
         assert updated_persisted_core is not None
         return updated_persisted_core
 
-    async def create_node(
-        self, *, mac_address: str, core_id: str, identifier: str | None = None
-    ) -> PersistedNodeColdtag:
-        assert is_valid_mac_address(mac_address), "Invalid MAC Address."
+    async def create_node(self, *, mac_address: str, identifier: str | None = None) -> PersistedNodeColdtag:
+        assert _is_valid_mac_address(mac_address), "Invalid MAC Address."
 
         async def __query(client: PgConnection) -> NodeColdtagSchema:
             node_id = cast(
@@ -378,16 +363,13 @@ class ColdtagPersistence(BasePersistence):
                     """
                     INSERT INTO create_node_coldtag (
                         mac_address,
-                        core_coldtag_id,
                         identifier
                     ) VALUES (
                         $1,
-                        $2,
-                        $3
+                        $2
                     ) RETURNING id
                     """,
                     mac_address,
-                    int(core_id),
                     identifier,
                 ),
             )

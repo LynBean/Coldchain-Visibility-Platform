@@ -1,5 +1,5 @@
 import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import strawberry
 from fastapi import HTTPException, status
@@ -19,7 +19,10 @@ class NodeColdtagDisplay:
         async def all(self, info: Info["AppContext"]) -> list[NodeColdtag]:
             coldtag_persistence = info.context.coldtag_persistence
             persisted_nodes = await coldtag_persistence.find_nodes()
-            return await asyncio.gather(*[resolve_node_coldtag(node, info=info) for node in persisted_nodes])
+            return cast(
+                "list[NodeColdtag]",
+                await asyncio.gather(*[resolve_node_coldtag(node, info=info) for node in persisted_nodes]),
+            )
 
         @strawberry.field
         async def by_id(self, node_id: strawberry.scalars.ID, info: Info["AppContext"]) -> NodeColdtag:
