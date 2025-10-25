@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import Callable, Coroutine
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import strawberry
 

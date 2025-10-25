@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 from strawberry import Schema
 from strawberry.fastapi import BaseContext
 from strawberry.file_uploads import Upload
+from strawberry.schema.base import BaseSchema
 from supabase import AClient as SupabaseClient
 
 from src.persistence.coldtag import ColdtagPersistence
@@ -48,8 +49,9 @@ def create_context(app: FastAPI, /, env: Literal["production", "development"]) -
     return lambda: context
 
 
-AppSchema = Schema(
-    query=QuerySchema,
-    mutation=MutationSchema,
-    scalar_overrides={UploadFile: Upload},
-)
+def create_schema() -> BaseSchema:
+    return Schema(
+        query=QuerySchema,
+        mutation=MutationSchema,
+        scalar_overrides={UploadFile: Upload},
+    )

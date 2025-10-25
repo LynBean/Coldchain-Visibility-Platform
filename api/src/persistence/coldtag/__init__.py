@@ -115,8 +115,11 @@ class ColdtagPersistence(BasePersistence):
             return [CoreColdtagSchema(**row) for row in rows]
 
         core_coldtag_schemas = await self._commit(__query)
-        return await asyncio.gather(
-            *[PersistedCoreColdtag.construct_model(self, schema) for schema in core_coldtag_schemas]
+        return cast(
+            "list[PersistedCoreColdtag]",
+            await asyncio.gather(
+                *[PersistedCoreColdtag.construct_model(self, schema) for schema in core_coldtag_schemas]
+            ),
         )
 
     async def find_core_by_id(self, coldtag_id: str, /) -> PersistedCoreColdtag | None:
@@ -152,8 +155,11 @@ class ColdtagPersistence(BasePersistence):
             return [NodeColdtagSchema(**row) for row in rows]
 
         node_coldtag_schemas = await self._commit(__query)
-        return await asyncio.gather(
-            *[PersistedNodeColdtag.construct_model(self, schema) for schema in node_coldtag_schemas]
+        return cast(
+            "list[PersistedNodeColdtag]",
+            await asyncio.gather(
+                *[PersistedNodeColdtag.construct_model(self, schema) for schema in node_coldtag_schemas]
+            ),
         )
 
     async def find_node_by_id(self, coldtag_id: str, /) -> PersistedNodeColdtag | None:
