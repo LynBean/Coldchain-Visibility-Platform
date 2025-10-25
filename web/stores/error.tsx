@@ -25,7 +25,9 @@ export const Provider: React.FunctionComponent<React.PropsWithChildren> = (props
   const timers = React.useRef<Record<string, NodeJS.Timeout>>({})
 
   const catchError = React.useCallback((error: Error | object) => {
-    toast.error(JSON.stringify(error), {action: []})
+    console.error(error)
+    toast.error(JSON.stringify(error))
+
     const id = crypto.randomUUID()
     setState((state) => ({
       ...state,

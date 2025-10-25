@@ -72,7 +72,7 @@ const DashboardCorePage: React.FunctionComponent<React.PropsWithChildren> = ({
           </div>
 
           <div
-            className={tw`scrollbar-hide flex w-full flex-col overflow-y-auto overflow-x-hidden pt-20`}
+            className={tw`flex w-full flex-col overflow-y-auto overflow-x-hidden pt-20 scrollbar-hide`}
           >
             {state.items.map((item, index) => (
               <Button
