@@ -144,12 +144,6 @@ class CoreColdtag:
     mac_address: str
     identifier: str | None
 
-    _node_coldtags: strawberry.Private[Callable[..., Coroutine[Any, Any, list[NodeColdtag]]]]
-
-    @strawberry.field
-    async def node_coldtags(self) -> list[NodeColdtag]:
-        return await self._node_coldtags()
-
     _events: strawberry.Private[Callable[..., Coroutine[Any, Any, CoreColdtagEvents]]]
 
     @strawberry.field
@@ -297,13 +291,12 @@ async def resolve_node_coldtag(
 async def resolve_core_coldtag(
     core_coldtag: PersistedCoreColdtag, /, info: strawberry.Info["AppContext"]
 ) -> CoreColdtag:
-    async def resolve_nodes() -> list[NodeColdtag]:
-        nodes = await core_coldtag.nodes()
-        return await asyncio.gather(*[resolve_node_coldtag(node, info=info) for node in nodes])
-
     async def resolve_events() -> CoreColdtag.CoreColdtagEvents:
         persisted_events = await core_coldtag.events()
-        basic = await asyncio.gather(*[resolve_core_coldtag_event(event, info=info) for event in persisted_events])
+        basic = cast(
+            "list[CoreColdtagEvent]",
+            await asyncio.gather(*[resolve_core_coldtag_event(event, info=info) for event in persisted_events]),
+        )
 
         return CoreColdtag.CoreColdtagEvents(
             basic=basic,
@@ -313,7 +306,6 @@ async def resolve_core_coldtag(
         id=strawberry.scalars.ID(core_coldtag.id),
         mac_address=core_coldtag.mac_address,
         identifier=core_coldtag.identifier,
-        _node_coldtags=resolve_nodes,
         _events=resolve_events,
         deleted=core_coldtag.deleted,
         created_time=core_coldtag.created_time,

@@ -213,7 +213,6 @@ class PersistedCoreColdtag(BaseModel):
     id: str
     mac_address: str
     identifier: str | None
-    nodes: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtag]]]
     events: Callable[..., Coroutine[Any, Any, list[PersistedCoreColdtagEvent]]]
     deleted: bool
     created_time: datetime
@@ -223,9 +222,6 @@ class PersistedCoreColdtag(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: CoreColdtagSchema, /
     ) -> "PersistedCoreColdtag":
-        async def retrieve_nodes() -> list[PersistedNodeColdtag]:
-            return await coldtag_persistence.find_nodes_by_core_id(str(data.id))
-
         async def retrieve_events() -> list[PersistedCoreColdtagEvent]:
             events = await coldtag_persistence.find_core_events_by_core_id(str(data.id))
             return sorted(events, key=lambda x: x.event_time, reverse=True)
@@ -234,7 +230,6 @@ class PersistedCoreColdtag(BaseModel):
             id=str(data.id),
             mac_address=data.mac_address,
             identifier=data.identifier,
-            nodes=retrieve_nodes,
             events=retrieve_events,
             deleted=bool(data.deleted),
             created_time=data.created_time,
