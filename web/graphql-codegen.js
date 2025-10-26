@@ -9,6 +9,7 @@ const config = {
       config: {
         defaultScalarType: 'string',
         enumsAsTypes: true,
+        gqlImport: 'graphql-tag#gql',
         scalars: {
           Upload: 'File',
         },

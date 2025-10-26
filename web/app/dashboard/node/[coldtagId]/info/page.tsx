@@ -7,7 +7,7 @@ import { Cvp_DashboardNodeInfo_DisplayNodeColdtagByIdQuery } from '@/stores/grap
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { useParams } from 'next/navigation.js'
 import React from 'react'
-import DashboardNodePage from '../../page.tsx'
+import DashboardNodeShowcase from '../../showcase.tsx'
 
 const DashboardNodeInfoPage: React.FunctionComponent = () => {
   const [, { catchError }] = useErrorState()
@@ -51,7 +51,7 @@ const DashboardNodeInfoPage: React.FunctionComponent = () => {
   }, [catchError, gqlClient, params])
 
   return (
-    <DashboardNodePage>
+    <DashboardNodeShowcase>
       <div className={tw`flex h-full w-full flex-col`}>
         <div className={tw`h-16 w-full border border-b-gray-300`}>
           <Typography
@@ -95,7 +95,7 @@ const DashboardNodeInfoPage: React.FunctionComponent = () => {
           ))}
         </div>
       </div>
-    </DashboardNodePage>
+    </DashboardNodeShowcase>
   )
 }
 

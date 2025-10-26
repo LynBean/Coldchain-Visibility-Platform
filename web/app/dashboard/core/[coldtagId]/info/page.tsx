@@ -7,7 +7,7 @@ import { Cvp_DashboardCoreInfo_DisplayCoreColdtagByIdQuery } from '@/stores/grap
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { useParams } from 'next/navigation.js'
 import React from 'react'
-import DashboardCorePage from '../../page.tsx'
+import DashboardCoreShowcase from '../../showcase.tsx'
 
 const DashboardCoreInfoPage: React.FunctionComponent = () => {
   const [, { catchError }] = useErrorState()
@@ -51,7 +51,7 @@ const DashboardCoreInfoPage: React.FunctionComponent = () => {
   }, [catchError, gqlClient, params])
 
   return (
-    <DashboardCorePage>
+    <DashboardCoreShowcase>
       <div className={tw`flex h-full w-full flex-col`}>
         <div className={tw`h-16 w-full border border-b-gray-300`}>
           <Typography
@@ -95,7 +95,7 @@ const DashboardCoreInfoPage: React.FunctionComponent = () => {
           ))}
         </div>
       </div>
-    </DashboardCorePage>
+    </DashboardCoreShowcase>
   )
 }
 
