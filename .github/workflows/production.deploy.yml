@@ -55,13 +55,14 @@ jobs:
       - name: Deploy to cloud
         env:
           DOCKER_HOST: ${{ vars.TAILSCALE_TARGET_HOST }}
+          DOCKER_IMAGE_TAG: ${{ github.ref_name }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           WEB_URL: ${{ vars.WEB_URL }}
         run: |
           docker logout
-          echo ${{ secrets.DOCKER_PAT }} | docker login ghcr.io -u ${{ GITHUB.repository_owner }} --password-stdin
+          echo ${{ secrets.DOCKER_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
           docker compose -f docker-compose.prod.yml pull
           docker compose -f docker-compose.prod.yml up -d
           docker logout

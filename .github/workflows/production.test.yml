@@ -12,13 +12,14 @@ jobs:
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ GITHUB.repository_owner }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.DOCKER_PAT }}
 
       - uses: docker/setup-compose-action@v1
 
       - name: Spin-up servers
         env:
+          DOCKER_IMAGE_TAG: ${{ github.ref_name }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
