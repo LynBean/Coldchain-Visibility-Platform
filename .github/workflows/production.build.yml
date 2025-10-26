@@ -27,13 +27,18 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ GITHUB.repository_owner }}
-          password: ${{ vars.DOCKER_PAT }}
+          password: ${{ secrets.DOCKER_PAT }}
 
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/setup-compose-action@v1
 
       - name: Spin-up API server
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          WEB_URL: ${{ vars.WEB_URL }}
         run: |
           docker compose -f docker-compose.prod.yml up api -d --build
           for i in {1..100}; do

@@ -41,10 +41,10 @@ services:
       - 5000:5000
     restart: always
     environment:
-      WEB_URL: https://coldchain.xoxatlantis.org
-      SUPABASE_URL: https://kqicwbzqfievhpaodmxe.supabase.co
-      SUPABASE_SECRET_KEY: sb_secret_ciY7mhR7mLNjbd0txoF_2Q_q5_pai5J
-      SUPABASE_DB_URL: postgresql://postgres.kqicwbzqfievhpaodmxe:xllnhtAf7kVHs4xl@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+      WEB_URL: ${WEB_URL}
+      SUPABASE_URL: https://${SUPABASE_PROJECT_ID}.supabase.co
+      SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}
+      SUPABASE_DB_URL: postgresql://postgres.${SUPABASE_PROJECT_ID}:${SUPABASE_DB_PASSWORD}@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
       REDIS_URL: redis://redis:6379
 
   redis:
