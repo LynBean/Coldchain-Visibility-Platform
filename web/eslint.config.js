@@ -9,15 +9,20 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 const config = defineConfig([
-  reactHooks.configs.flat.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    plugins: { js },
-    extends: ['js/recommended'],
+    plugins: { js, react: pluginReact, 'react-hooks': reactHooks },
+    extends: [
+      'js/recommended',
+      ...tseslint.configs.recommended,
+      pluginReact.configs.flat.recommended,
+      reactHooks.configs.flat.recommended,
+    ],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+    },
   },
-  tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
   {
     files: ['**/*.json'],
     plugins: { json },
