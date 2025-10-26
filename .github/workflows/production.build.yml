@@ -47,7 +47,7 @@ jobs:
               if [ "$STATUS" == "healthy" ]; then
               exit 0
               fi
-              sleep 2
+              sleep 5
           done
           exit 1
 
@@ -73,7 +73,7 @@ jobs:
           file: ./api/Dockerfile.prod
           push: true
           tags: |
-            ${{ vars.DOCKER_IMAGE_URL }}/core:${{ github.ref_name }}
+            ${{ vars.DOCKER_IMAGE_URL }}/api:${{ github.ref_name }}
             ${{ github.ref_name == 'main' && format('{0}/api:latest', vars.DOCKER_IMAGE_URL) || '' }}
 
   test:
