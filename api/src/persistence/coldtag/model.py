@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 from pydantic import BaseModel, ConfigDict
 
 from .schema import (
-    ColdtagConnectionStatusEnum,
     CoreColdtagEventSchema,
     CoreColdtagSchema,
     NodeColdtagEventAlertImpactSchema,
@@ -23,7 +22,6 @@ class PersistedCoreColdtagEvent(BaseModel):
 
     id: str
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    connection_status: ColdtagConnectionStatusEnum
     event_time: datetime
     time: datetime
 
@@ -39,7 +37,6 @@ class PersistedCoreColdtagEvent(BaseModel):
         return PersistedCoreColdtagEvent(
             id=str(data.id),
             core_coldtag=retrieve_core_coldtag,
-            connection_status=data.connection_status,
             event_time=data.event_time,
             time=data.time,
         )
@@ -51,11 +48,11 @@ class PersistedNodeColdtagEvent(BaseModel):
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    connection_status: ColdtagConnectionStatusEnum
     temperature: float | None
     humidity: float | None
     latitude: float | None
     longitude: float | None
+    core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
@@ -77,11 +74,11 @@ class PersistedNodeColdtagEvent(BaseModel):
             id=str(data.id),
             node_coldtag=retrieve_node_coldtag,
             core_coldtag=retrieve_core_coldtag,
-            connection_status=data.connection_status,
             temperature=data.temperature,
             humidity=data.humidity,
             latitude=data.latitude,
             longitude=data.longitude,
+            core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,
         )
@@ -93,9 +90,9 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    connection_status: ColdtagConnectionStatusEnum
     latitude: float | None
     longitude: float | None
+    core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
@@ -117,9 +114,9 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
             id=str(data.id),
             node_coldtag=retrieve_node_coldtag,
             core_coldtag=retrieve_core_coldtag,
-            connection_status=data.connection_status,
             latitude=data.latitude,
             longitude=data.longitude,
+            core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,
         )
@@ -131,9 +128,9 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    connection_status: ColdtagConnectionStatusEnum
     latitude: float | None
     longitude: float | None
+    core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
@@ -155,9 +152,9 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
             id=str(data.id),
             node_coldtag=retrieve_node_coldtag,
             core_coldtag=retrieve_core_coldtag,
-            connection_status=data.connection_status,
             latitude=data.latitude,
             longitude=data.longitude,
+            core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,
         )

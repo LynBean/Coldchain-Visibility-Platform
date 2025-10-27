@@ -1,7 +1,6 @@
 import asyncio
 from collections.abc import Callable, Coroutine
 from datetime import datetime
-from enum import Enum
 from typing import TYPE_CHECKING, Any, cast
 
 import strawberry
@@ -19,12 +18,6 @@ if TYPE_CHECKING:
     from src.route import AppContext
 
 
-@strawberry.enum
-class ColdtagEventConnectionStatus(Enum):
-    connected = "connected"
-    disconnected = "disconnected"
-
-
 @strawberry.type
 class CoreColdtagEvent:
     id: strawberry.scalars.ID
@@ -35,7 +28,6 @@ class CoreColdtagEvent:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
-    connection_status: ColdtagEventConnectionStatus
     event_time: datetime
     time: datetime
 
@@ -56,11 +48,11 @@ class NodeColdtagEvent:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
-    connection_status: ColdtagEventConnectionStatus
     temperature: float | None
     humidity: float | None
     latitude: float | None
     longitude: float | None
+    core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
@@ -81,9 +73,9 @@ class NodeColdtagEventAlertLiquid:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
-    connection_status: ColdtagEventConnectionStatus
     latitude: float | None
     longitude: float | None
+    core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
@@ -104,9 +96,9 @@ class NodeColdtagEventAlertImpact:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
-    connection_status: ColdtagEventConnectionStatus
     latitude: float | None
     longitude: float | None
+    core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
@@ -165,7 +157,6 @@ async def resolve_core_coldtag_event(
     return CoreColdtagEvent(
         id=strawberry.scalars.ID(coldtag_event.id),
         _core_coldtag=_resolve_core_coldtag,
-        connection_status=ColdtagEventConnectionStatus(coldtag_event.connection_status),
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
     )
@@ -186,11 +177,11 @@ async def resolve_node_coldtag_event(
         id=strawberry.scalars.ID(coldtag_event.id),
         _node_coldtag=_resolve_node_coldtag,
         _core_coldtag=_resolve_core_coldtag,
-        connection_status=ColdtagEventConnectionStatus(coldtag_event.connection_status),
         temperature=coldtag_event.temperature,
         humidity=coldtag_event.humidity,
         latitude=coldtag_event.latitude,
         longitude=coldtag_event.longitude,
+        core_coldtag_received_time=coldtag_event.core_coldtag_received_time,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
     )
@@ -211,9 +202,9 @@ async def resolve_node_coldtag_event_alert_liquid(
         id=strawberry.scalars.ID(coldtag_event.id),
         _node_coldtag=_resolve_node_coldtag,
         _core_coldtag=_resolve_core_coldtag,
-        connection_status=ColdtagEventConnectionStatus(coldtag_event.connection_status),
         latitude=coldtag_event.latitude,
         longitude=coldtag_event.longitude,
+        core_coldtag_received_time=coldtag_event.core_coldtag_received_time,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
     )
@@ -234,9 +225,9 @@ async def resolve_node_coldtag_event_alert_impact(
         id=strawberry.scalars.ID(coldtag_event.id),
         _node_coldtag=_resolve_node_coldtag,
         _core_coldtag=_resolve_core_coldtag,
-        connection_status=ColdtagEventConnectionStatus(coldtag_event.connection_status),
         latitude=coldtag_event.latitude,
         longitude=coldtag_event.longitude,
+        core_coldtag_received_time=coldtag_event.core_coldtag_received_time,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
     )

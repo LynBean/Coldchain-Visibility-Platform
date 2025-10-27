@@ -19,7 +19,6 @@ from .model import (
     PersistedNodeColdtagEventAlertLiquid,
 )
 from .schema import (
-    ColdtagConnectionStatusEnum,
     CoreColdtagEventSchema,
     CoreColdtagSchema,
     NodeColdtagEventAlertImpactSchema,
@@ -29,7 +28,6 @@ from .schema import (
 )
 
 __all__ = [
-    "ColdtagConnectionStatusEnum",
     "CoreColdtagEventSchema",
     "CoreColdtagSchema",
     "NodeColdtagEventAlertImpactSchema",
@@ -439,7 +437,6 @@ class ColdtagPersistence(BasePersistence):
         core_id: str,
         /,
         *,
-        connection_status: ColdtagConnectionStatusEnum,
         time: datetime,
     ) -> PersistedCoreColdtagEvent:
         async def __query(client: PgConnection) -> CoreColdtagEventSchema:
@@ -449,16 +446,13 @@ class ColdtagPersistence(BasePersistence):
                     """
                     INSERT INTO core_coldtag_event (
                         core_coldtag_id,
-                        connection_status,
                         event_time
                     ) VALUES (
                         $1,
-                        $2,
-                        $3
+                        $2
                     ) RETURNING *
                     """,
                     int(core_id),
-                    connection_status,
                     time,
                 ),
             )
@@ -473,11 +467,12 @@ class ColdtagPersistence(BasePersistence):
         node_id: str,
         /,
         *,
-        connection_status: ColdtagConnectionStatusEnum,
+        core_id: str,
         temperature: str | None = None,
         humidity: str | None = None,
         latitude: float | None,
         longitude: float | None,
+        core_received_time: datetime,
         time: datetime,
     ) -> PersistedNodeColdtagEvent:
         async def __query(client: PgConnection) -> NodeColdtagEventSchema:
@@ -487,11 +482,12 @@ class ColdtagPersistence(BasePersistence):
                     """
                     INSERT INTO node_coldtag_event (
                         node_coldtag_id,
-                        connection_status,
+                        core_coldtag_id,
                         temperature,
                         humidity,
                         latitude,
                         longitude,
+                        core_coldtag_received_time,
                         event_time
                     ) VALUES (
                         $1,
@@ -500,15 +496,17 @@ class ColdtagPersistence(BasePersistence):
                         $4,
                         $5,
                         $6,
-                        $7
+                        $7,
+                        $8
                     ) RETURNING *
                     """,
                     int(node_id),
-                    connection_status,
+                    int(core_id),
                     temperature,
                     humidity,
                     latitude,
                     longitude,
+                    core_received_time,
                     time,
                 ),
             )
@@ -523,9 +521,10 @@ class ColdtagPersistence(BasePersistence):
         node_id: str,
         /,
         *,
-        connection_status: ColdtagConnectionStatusEnum,
+        core_id: str,
         latitude: float | None,
         longitude: float | None,
+        core_received_time: datetime,
         time: datetime,
     ) -> PersistedNodeColdtagEventAlertLiquid:
         async def __query(client: PgConnection) -> NodeColdtagEventAlertLiquidSchema:
@@ -535,22 +534,26 @@ class ColdtagPersistence(BasePersistence):
                     """
                     INSERT INTO node_coldtag_event_alert_liquid (
                         node_coldtag_id,
+                        core_coldtag_id,
                         connection_status,
                         latitude,
                         longitude,
+                        core_coldtag_received_time,
                         event_time
                     ) VALUES (
                         $1,
                         $2,
                         $3,
                         $4,
-                        $5
+                        $5,
+                        $6
                     ) RETURNING *
                     """,
                     int(node_id),
-                    connection_status,
+                    int(core_id),
                     latitude,
                     longitude,
+                    core_received_time,
                     time,
                 ),
             )
@@ -565,9 +568,10 @@ class ColdtagPersistence(BasePersistence):
         node_id: str,
         /,
         *,
-        connection_status: ColdtagConnectionStatusEnum,
+        core_id: str,
         latitude: float | None,
         longitude: float | None,
+        core_received_time: datetime,
         time: datetime,
     ) -> PersistedNodeColdtagEventAlertImpact:
         async def __query(client: PgConnection) -> NodeColdtagEventAlertImpactSchema:
@@ -575,24 +579,28 @@ class ColdtagPersistence(BasePersistence):
                 "PgRecord",
                 await client.fetchrow(
                     """
-                    INSERT INTO node_coldtag_event_alert_liquid (
+                    INSERT INTO node_coldtag_event_alert_impact (
                         node_coldtag_id,
+                        core_coldtag_id,
                         connection_status,
                         latitude,
                         longitude,
+                        core_coldtag_received_time,
                         event_time
                     ) VALUES (
                         $1,
                         $2,
                         $3,
                         $4,
-                        $5
+                        $5,
+                        $6
                     ) RETURNING *
                     """,
                     int(node_id),
-                    connection_status,
+                    int(core_id),
                     latitude,
                     longitude,
+                    core_received_time,
                     time,
                 ),
             )
