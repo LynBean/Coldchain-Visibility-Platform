@@ -61,8 +61,8 @@ services:
     networks:
       - coldchain-visibility-platform
     ports:
-      - 1883:1883
-      - 9001:9001
+      - 58012:1883
+      - 58013:9001
     restart: always
 
   redis:
