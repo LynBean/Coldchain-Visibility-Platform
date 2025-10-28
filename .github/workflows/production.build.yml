@@ -54,7 +54,8 @@ jobs:
       - name: Generate GraphQL codegen
         run: |
           npm install @graphql-codegen/cli @graphql-codegen/typescript-generic-sdk
-          npm run web:graphql-codegen
+          cd web
+          npm run graphql-codegen:production
 
       - name: Build and Push Web Image
         uses: docker/build-push-action@v6

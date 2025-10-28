@@ -7,7 +7,8 @@
     "start": "next start -p 3000",
     "typecheck": "npx tsc --noEmit --project tsconfig.json",
     "lint": "npx eslint .",
-    "graphql-codegen": "npx graphql-codegen --config graphql-codegen.js http://127.0.0.1:5000/graphql"
+    "graphql-codegen": "npx graphql-codegen --config graphql-codegen.js http://127.0.0.1:5000/graphql",
+    "graphql-codegen:production": "npx graphql-codegen --config graphql-codegen.js http://127.0.0.1:58011/graphql"
   },
   "type": "module",
   "dependencies": {
