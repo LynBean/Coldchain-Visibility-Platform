@@ -48,7 +48,28 @@ services:
       SUPABASE_URL: http://supabase_kong_coldchain-visibility-platform:8000
       SUPABASE_SECRET_KEY: sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz
       SUPABASE_DB_URL: postgresql://postgres:postgres@supabase_db_coldchain-visibility-platform:5432/postgres
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: 1883
       REDIS_URL: redis://redis:6379
+
+  mosquitto:
+    container_name: coldchain-visibility-platform-mosquitto
+    image: ghcr.io/lynbean/coldchain-visibility-platform/mosquitto:latest
+    build:
+      context: mosquitto
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        - path: mosquitto/mosquitto.conf
+          target: /mosquitto/config/mosquitto.conf
+          action: sync+restart
+
+    networks:
+      - supabase_network_coldchain-visibility-platform
+    ports:
+      - 58012:1883
+      - 58013:9001
+    restart: unless-stopped
 
   redis:
     container_name: coldchain-visibility-platform-redis

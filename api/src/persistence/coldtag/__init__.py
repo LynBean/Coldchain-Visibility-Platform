@@ -143,6 +143,29 @@ class ColdtagPersistence(BasePersistence):
 
         return await PersistedCoreColdtag.construct_model(self, core_coldtag_schema)
 
+    async def find_core_by_mac_address(self, mac_address: str, /) -> PersistedCoreColdtag | None:
+        async def __query(client: PgConnection) -> CoreColdtagSchema | None:
+            row = cast(
+                "PgRecord",
+                await client.fetchrow(
+                    """
+                    SELECT * FROM core_coldtag
+                    WHERE mac_address = $1
+                    """,
+                    mac_address,
+                ),
+            )
+            if not row:
+                return None
+
+            return CoreColdtagSchema(**row)
+
+        core_coldtag_schema = await self._commit(__query)
+        if core_coldtag_schema is None:
+            return None
+
+        return await PersistedCoreColdtag.construct_model(self, core_coldtag_schema)
+
     async def find_nodes(self) -> list[PersistedNodeColdtag]:
         async def __query(client: PgConnection) -> list[NodeColdtagSchema]:
             rows = await client.fetch(
@@ -170,6 +193,29 @@ class ColdtagPersistence(BasePersistence):
                     WHERE id = $1
                     """,
                     int(coldtag_id),
+                ),
+            )
+            if not row:
+                return None
+
+            return NodeColdtagSchema(**row)
+
+        node_coldtag_schema = await self._commit(__query)
+        if node_coldtag_schema is None:
+            return None
+
+        return await PersistedNodeColdtag.construct_model(self, node_coldtag_schema)
+
+    async def find_node_by_mac_address(self, mac_address: str, /) -> PersistedNodeColdtag | None:
+        async def __query(client: PgConnection) -> NodeColdtagSchema | None:
+            row = cast(
+                "PgRecord",
+                await client.fetchrow(
+                    """
+                    SELECT * FROM node_coldtag
+                    WHERE mac_address = $1
+                    """,
+                    mac_address,
                 ),
             )
             if not row:
@@ -468,8 +514,8 @@ class ColdtagPersistence(BasePersistence):
         /,
         *,
         core_id: str,
-        temperature: str | None = None,
-        humidity: str | None = None,
+        temperature: float | None = None,
+        humidity: float | None = None,
         latitude: float | None,
         longitude: float | None,
         core_received_time: datetime,

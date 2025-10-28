@@ -48,7 +48,22 @@ services:
       SUPABASE_URL: https://${SUPABASE_PROJECT_ID}.supabase.co
       SUPABASE_SECRET_KEY: ${SUPABASE_SECRET_KEY}
       SUPABASE_DB_URL: postgresql://postgres.${SUPABASE_PROJECT_ID}:${SUPABASE_DB_PASSWORD}@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: 1883
       REDIS_URL: redis://redis:6379
+
+  mosquitto:
+    container_name: coldchain-visibility-platform-mosquitto
+    image: ghcr.io/lynbean/coldchain-visibility-platform/mosquitto:${DOCKER_IMAGE_TAG:-latest}
+    build:
+      context: mosquitto
+      dockerfile: Dockerfile
+    networks:
+      - coldchain-visibility-platform
+    ports:
+      - 58012:1883
+      - 58013:9001
+    restart: always
 
   redis:
     container_name: coldchain-visibility-platform-redis

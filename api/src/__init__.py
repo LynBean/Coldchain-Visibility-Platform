@@ -12,6 +12,7 @@ from strawberry.subscriptions import GRAPHQL_TRANSPORT_WS_PROTOCOL, GRAPHQL_WS_P
 from supabase import AsyncClientOptions
 from supabase import create_async_client as create_supabase_client
 
+from src.listener import create_mqtt_client
 from src.persistence.coldtag import ColdtagPersistence
 
 from .route import create_context, create_schema
@@ -41,9 +42,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     app.extra["coldtag_persistence"] = ColdtagPersistence(app, supabase_database_pool)
 
+    mqtt = await create_mqtt_client()
+    app.extra["mqtt"] = mqtt.client
+    await mqtt.connect()
+    await mqtt.subscribe_core_event(app)
+    await mqtt.subscribe_node_event(app)
+    await mqtt.subscribe_node_event_alert_impact(app)
+    await mqtt.subscribe_node_event_alert_liquid(app)
+
     yield
 
+    await app.extra["redis"].aclose(close_connection_pool=True)
     await supabase_database_pool.close()
+    await mqtt.disconnect()
 
 
 app = FastAPI(lifespan=lifespan)
