@@ -154,7 +154,7 @@ class AppMQTT(BaseModel):
 
         return asyncio.create_task(
             self._schedule_task(
-                lambda: 3,
+                lambda: 300,
                 self.node_devices,
                 create,
             )
