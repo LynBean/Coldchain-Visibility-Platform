@@ -77,6 +77,16 @@ jobs:
             ${{ vars.DOCKER_IMAGE_URL }}/api:${{ github.ref_name }}
             ${{ github.ref_name == 'main' && format('{0}/api:latest', vars.DOCKER_IMAGE_URL) || '' }}
 
+      - name: Build and Push Mosquitto Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./mosquitto
+          file: ./mosquitto/Dockerfile
+          push: true
+          tags: |
+            ${{ vars.DOCKER_IMAGE_URL }}/mosquitto:${{ github.ref_name }}
+            ${{ github.ref_name == 'main' && format('{0}/mosquitto:latest', vars.DOCKER_IMAGE_URL) || '' }}
+
   test:
     needs: build
     uses: ./.github/workflows/production.test.yml

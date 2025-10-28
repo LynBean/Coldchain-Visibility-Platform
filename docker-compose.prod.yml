@@ -31,6 +31,8 @@ services:
       dockerfile: Dockerfile.prod
 
     depends_on:
+      mosquitto:
+        condition: service_started
       redis:
         condition: service_started
     healthcheck:
