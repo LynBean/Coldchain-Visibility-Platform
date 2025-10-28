@@ -1,11 +1,12 @@
 import asyncio
 import builtins
 import json
+import os
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from contextlib import asynccontextmanager, suppress
 from datetime import UTC, datetime
 from random import choice, uniform
-from typing import Any
+from typing import Any, Literal, cast
 
 import httpx
 from aiomqtt import Client as MQTTClient
@@ -14,9 +15,15 @@ from fastapi import FastAPI
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
-MQTT_HOST = "127.0.0.1"
+ENV: Literal["development", "production"] = cast(
+    "Literal['development', 'production']",
+    os.getenv("ENV", "development"),
+)
 
-MQTT_PORT = 58012
+API_URL = "http://127.0.0.1:5000/graphql" if ENV == "development" else "http://127.0.0.1:58011/graphql"
+
+MQTT_HOST = "127.0.0.1"
+MQTT_PORT = 1883 if ENV == "development" else 58012
 
 
 class AppMQTT(BaseModel):
@@ -86,9 +93,7 @@ class AppMQTT(BaseModel):
                 """
                 variables = {"macAddress": core.mac_address, "identifier": core.identifier}
                 with suppress(builtins.BaseException):
-                    await http_client.post(
-                        "http://127.0.0.1:5000/graphql", json={"query": query, "variables": variables}
-                    )
+                    await http_client.post(API_URL, json={"query": query, "variables": variables})
 
         async def create_node(node: AppMQTT.MockNode) -> None:
             async with httpx.AsyncClient() as http_client:
@@ -101,9 +106,7 @@ class AppMQTT(BaseModel):
                 """
                 variables = {"macAddress": node.mac_address, "identifier": node.identifier}
                 with suppress(builtins.BaseException):
-                    await http_client.post(
-                        "http://127.0.0.1:5000/graphql", json={"query": query, "variables": variables}
-                    )
+                    await http_client.post(API_URL, json={"query": query, "variables": variables})
 
         await asyncio.gather(*[create_core(core) for core in self.core_devices])
         await asyncio.gather(*[create_node(node) for node in self.node_devices])
