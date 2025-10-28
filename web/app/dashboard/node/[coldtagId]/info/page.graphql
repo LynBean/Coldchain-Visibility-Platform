@@ -4,13 +4,6 @@ query CVP_DashboardNodeInfo_DisplayNodeColdtagById($nodeId: ID!) {
       id
       macAddress
       identifier
-      events {
-        basic {
-          id
-          connectionStatus
-          eventTime
-        }
-      }
     }
   }
 }

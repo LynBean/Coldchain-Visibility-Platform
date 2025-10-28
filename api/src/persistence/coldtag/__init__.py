@@ -535,7 +535,6 @@ class ColdtagPersistence(BasePersistence):
                     INSERT INTO node_coldtag_event_alert_liquid (
                         node_coldtag_id,
                         core_coldtag_id,
-                        connection_status,
                         latitude,
                         longitude,
                         core_coldtag_received_time,
@@ -582,7 +581,6 @@ class ColdtagPersistence(BasePersistence):
                     INSERT INTO node_coldtag_event_alert_impact (
                         node_coldtag_id,
                         core_coldtag_id,
-                        connection_status,
                         latitude,
                         longitude,
                         core_coldtag_received_time,

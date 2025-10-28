@@ -4,13 +4,6 @@ query CVP_DashboardCoreInfo_DisplayCoreColdtagById($coreId: ID!) {
       id
       macAddress
       identifier
-      events {
-        basic {
-          id
-          connectionStatus
-          eventTime
-        }
-      }
     }
   }
 }
