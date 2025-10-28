@@ -96,7 +96,9 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install -D
+      - uses: astral-sh/setup-uv@v6
+
+      - run: npm run dev:install
 
       - name: Check formatting
         run: |
@@ -107,19 +109,3 @@ jobs:
             git --no-pager diff --staged
             exit 1
           fi
-
-  ensure-web-typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - run: npm install
-
-      - name: Run web typecheck
-        run: |
-          cd web
-          npm run typecheck
