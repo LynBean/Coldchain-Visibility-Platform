@@ -55,8 +55,6 @@ services:
     image: redis:8
     networks:
       - supabase_network_coldchain-visibility-platform
-    ports:
-      - 6379:6379
     restart: unless-stopped
 
 networks:
