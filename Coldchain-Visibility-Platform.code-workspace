@@ -16,5 +16,13 @@
       "name": "supabase",
       "path": "./supabase",
     },
+    {
+      "name": "mock",
+      "path": "./mock",
+    },
+    {
+      "name": "mosquitto",
+      "path": "./mosquitto",
+    },
   ],
 }

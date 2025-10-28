@@ -2,6 +2,7 @@ from collections.abc import Callable
 from functools import cached_property
 from typing import Literal
 
+from aiomqtt import Client as MQTTClient
 from fastapi import FastAPI, UploadFile
 from redis.asyncio import Redis
 from strawberry import Schema
@@ -38,6 +39,10 @@ class AppContext(BaseContext):
     @cached_property
     def redis(self) -> Redis:
         return self.app.extra["redis"]
+
+    @cached_property
+    def mqtt(self) -> MQTTClient:
+        return self.app.extra["mqtt"]
 
     @cached_property
     def coldtag_persistence(self) -> ColdtagPersistence:
