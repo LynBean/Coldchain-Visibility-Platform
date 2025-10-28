@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict
 
 MQTT_HOST = "127.0.0.1"
 
-MQTT_PORT = 1883
+MQTT_PORT = 58012
 
 
 class AppMQTT(BaseModel):
