@@ -80,3 +80,4 @@ jobs:
   test:
     needs: build
     uses: ./.github/workflows/production.test.yml
+    secrets: inherit

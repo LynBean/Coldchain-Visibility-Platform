@@ -1,6 +1,14 @@
 name: Production Test
 
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      DOCKER_PAT:
+        required: true
+      SUPABASE_ACCESS_TOKEN:
+        required: true
+      SUPABASE_DB_PASSWORD:
+        required: true
 
 jobs:
   ensure-health:
