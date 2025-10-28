@@ -12,6 +12,8 @@
     "supabase:db-diff": "npm run supabase:start; npx supabase db diff -f latest",
     "supabase:migration-up": "npx supabase migration up",
     "web:graphql-codegen": "cd web; npm run graphql-codegen",
+    "mock": "cd mock; ENV=development uv run main.py",
+    "mock:production": "cd mock; ENV=production uv run main.py",
     "dev": "npm run supabase:start; docker compose -f docker-compose.dev.yml up --no-recreate --watch",
     "dev:build": "npm run supabase:start; docker compose -f docker-compose.dev.yml up --no-recreate --build --watch",
     "dev:down": "docker compose -f docker-compose.dev.yml down; npm run supabase:stop",

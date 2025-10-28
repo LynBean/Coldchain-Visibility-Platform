@@ -58,13 +58,10 @@ class AppMQTT(BaseModel):
 
     async def connect(self) -> asyncio.Task:
         async def task() -> None:
-            while True:
+            while not self.is_shutdown.is_set():
                 try:
                     async with self.client:
                         await self.is_shutdown.wait()
-
-                        if self.is_shutdown.is_set():
-                            break
 
                 except MqttError as err:
                     logger.exception(err)
@@ -117,7 +114,7 @@ class AppMQTT(BaseModel):
         devices: list[MockCore] | list[MockNode],
         function: Callable[..., Coroutine[Any, Any, None]],
     ) -> None:
-        while True:
+        while not self.is_shutdown.is_set():
             await asyncio.gather(*[function(t) for t in devices])
             await asyncio.sleep(delay())
 
@@ -217,15 +214,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.extra["mqtt"] = MQTTClient(hostname=MQTT_HOST, port=MQTT_PORT)
 
     mqtt = AppMQTT(client=app.extra["mqtt"])
-    await mqtt.connect()
-    await mqtt.create_mock_devices()
-    await mqtt.publish_core_event()
-    await mqtt.publish_node_event()
-    await mqtt.publish_node_event_alert_impact()
-    await mqtt.publish_node_event_alert_liquid()
+
+    # Non-blocking mechanism to prevent CTRL + C lost his job
+    async def workflow() -> None:
+        await mqtt.connect()
+        await mqtt.create_mock_devices()
+        await mqtt.publish_core_event()
+        await mqtt.publish_node_event()
+        await mqtt.publish_node_event_alert_impact()
+        await mqtt.publish_node_event_alert_liquid()
+
+    task = asyncio.create_task(workflow())
 
     yield
 
+    task.cancel()
     await mqtt.disconnect()
 
 
