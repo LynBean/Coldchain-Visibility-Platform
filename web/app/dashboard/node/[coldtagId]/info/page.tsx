@@ -7,7 +7,7 @@ import { Cvp_DashboardNodeInfo_DisplayNodeColdtagByIdQuery } from '@/stores/grap
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { useParams } from 'next/navigation.js'
 import React from 'react'
-import DashboardNodeShowcase from '../../showcase.tsx'
+import DashboardNodeShowcase from '../../DashboardNodeShowcase.tsx'
 
 const DashboardNodeInfoPage: React.FunctionComponent = () => {
   const [, { catchError }] = useErrorState()

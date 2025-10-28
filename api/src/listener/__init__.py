@@ -58,10 +58,10 @@ class AppMQTT(BaseModel):
         async def task() -> None:
             while True:
                 try:
-                    await self.client.subscribe("core_event/+/telementry")
+                    await self.client.subscribe("core_event/+/telemetry")
                     async for message in self.client.messages:
                         try:
-                            if not re.compile(r"^core_event/[^/]+/telementry$").match(message.topic.value):
+                            if not re.compile(r"^core_event/[^/]+/telemetry$").match(message.topic.value):
                                 continue
 
                             topics = message.topic.value.split("/")
@@ -97,10 +97,10 @@ class AppMQTT(BaseModel):
         async def task() -> None:
             while True:
                 try:
-                    await self.client.subscribe("node_event/+/telementry")
+                    await self.client.subscribe("node_event/+/telemetry")
                     async for message in self.client.messages:
                         try:
-                            if not re.compile(r"^node_event/[^/]+/telementry$").match(message.topic.value):
+                            if not re.compile(r"^node_event/[^/]+/telemetry$").match(message.topic.value):
                                 continue
 
                             topics = message.topic.value.split("/")
@@ -109,7 +109,7 @@ class AppMQTT(BaseModel):
                             )
 
                             node_mac_address = topics[1]
-                            core_mac_address = payload["core_mac_address"]
+                            core_mac_address = payload["core_coldtag_mac_address"]
                             temperature = float(payload["temperature"])
                             humidity = float(payload["humidity"])
                             latitude = float(payload["latitude"])
@@ -164,7 +164,7 @@ class AppMQTT(BaseModel):
                             )
 
                             node_mac_address = topics[1]
-                            core_mac_address = payload["core_mac_address"]
+                            core_mac_address = payload["core_coldtag_mac_address"]
                             latitude = float(payload["latitude"])
                             longitude = float(payload["longitude"])
                             core_coldtag_received_time = datetime.strptime(
@@ -215,7 +215,7 @@ class AppMQTT(BaseModel):
                             )
 
                             node_mac_address = topics[1]
-                            core_mac_address = payload["core_mac_address"]
+                            core_mac_address = payload["core_coldtag_mac_address"]
                             latitude = float(payload["latitude"])
                             longitude = float(payload["longitude"])
                             core_coldtag_received_time = datetime.strptime(

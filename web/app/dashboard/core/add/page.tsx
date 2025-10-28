@@ -10,7 +10,7 @@ import { Cvp_DashboardCoreAdd_CreateCoreColdtagMutationVariables } from '@/store
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { useRouter } from 'next/navigation.js'
 import React from 'react'
-import DashboardFormPage from '../../form.tsx'
+import DashboardFormPage from '../../DashboardFormPage.tsx'
 
 const DashboardCoreAddPageTemplate: React.FunctionComponent<
   DashboardCoreAddPageTemplateProps

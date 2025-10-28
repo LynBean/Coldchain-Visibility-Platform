@@ -1,5 +1,5 @@
 import { connection } from 'next/server.js'
-import DashboardNodeShowcase from './showcase.tsx'
+import DashboardNodeShowcase from './DashboardNodeShowcase.tsx'
 
 const DashboardNodePage: React.FunctionComponent = async () => {
   await connection()

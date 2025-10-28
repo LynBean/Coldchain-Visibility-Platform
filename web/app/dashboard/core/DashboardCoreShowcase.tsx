@@ -9,7 +9,7 @@ import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { Plus as AddIcon, Banana as ColdtagIcon } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation.js'
 import React from 'react'
-import DashboardShowcaseTemplate from '../showcase.tsx'
+import DashboardShowcaseTemplate from '../DashboardShowcaseTemplate.tsx'
 
 const DashboardCoreShowcase: React.FunctionComponent<React.PropsWithChildren> = ({
   children,

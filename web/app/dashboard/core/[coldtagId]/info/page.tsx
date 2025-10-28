@@ -7,7 +7,7 @@ import { Cvp_DashboardCoreInfo_DisplayCoreColdtagByIdQuery } from '@/stores/grap
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { useParams } from 'next/navigation.js'
 import React from 'react'
-import DashboardCoreShowcase from '../../showcase.tsx'
+import DashboardCoreShowcase from '../../DashboardCoreShowcase.tsx'
 
 const DashboardCoreInfoPage: React.FunctionComponent = () => {
   const [, { catchError }] = useErrorState()

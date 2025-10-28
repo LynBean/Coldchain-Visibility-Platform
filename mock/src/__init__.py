@@ -120,9 +120,9 @@ class AppMQTT(BaseModel):
 
     async def publish_core_event(self) -> asyncio.Task:
         async def create(core: AppMQTT.MockCore) -> None:
-            logger.info(f"Publishing core_event/{core.mac_address}/telementry")
+            logger.info(f"Publishing core_event/{core.mac_address}/telemetry")
             await self.client.publish(
-                topic=f"core_event/{core.mac_address}/telementry",
+                topic=f"core_event/{core.mac_address}/telemetry",
                 payload=json.dumps({"event_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")}),
             )
 
@@ -136,12 +136,12 @@ class AppMQTT(BaseModel):
 
     async def publish_node_event(self) -> asyncio.Task:
         async def create(node: AppMQTT.MockNode) -> None:
-            logger.info(f"Publishing node_event/{node.mac_address}/telementry")
+            logger.info(f"Publishing node_event/{node.mac_address}/telemetry")
             await self.client.publish(
-                topic=f"node_event/{node.mac_address}/telementry",
+                topic=f"node_event/{node.mac_address}/telemetry",
                 payload=json.dumps(
                     {
-                        "core_mac_address": choice(self.core_devices).mac_address,
+                        "core_coldtag_mac_address": choice(self.core_devices).mac_address,
                         "temperature": uniform(10.5, 75.5),
                         "humidity": uniform(10.5, 75.5),
                         "latitude": uniform(10.5, 75.5),
@@ -167,7 +167,7 @@ class AppMQTT(BaseModel):
                 topic=f"node_event/{node.mac_address}/alert/impact",
                 payload=json.dumps(
                     {
-                        "core_mac_address": choice(self.core_devices).mac_address,
+                        "core_coldtag_mac_address": choice(self.core_devices).mac_address,
                         "latitude": uniform(10.5, 75.5),
                         "longitude": uniform(10.5, 75.5),
                         "core_coldtag_received_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -191,7 +191,7 @@ class AppMQTT(BaseModel):
                 topic=f"node_event/{node.mac_address}/alert/liquid",
                 payload=json.dumps(
                     {
-                        "core_mac_address": choice(self.core_devices).mac_address,
+                        "core_coldtag_mac_address": choice(self.core_devices).mac_address,
                         "latitude": uniform(10.5, 75.5),
                         "longitude": uniform(10.5, 75.5),
                         "core_coldtag_received_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
