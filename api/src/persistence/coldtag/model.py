@@ -166,16 +166,9 @@ class PersistedNodeColdtag(BaseModel):
     id: str
     mac_address: str
     identifier: str | None
-    events: Callable[
-        ...,
-        Coroutine[
-            Any,
-            Any,
-            list[
-                PersistedNodeColdtagEvent | PersistedNodeColdtagEventAlertLiquid | PersistedNodeColdtagEventAlertImpact
-            ],
-        ],
-    ]
+    telemetry_events: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtagEvent]]]
+    alert_liquid_events: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtagEventAlertLiquid]]]
+    alert_impact_events: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtagEventAlertImpact]]]
     deleted: bool
     created_time: datetime
     updated_time: datetime
@@ -184,20 +177,25 @@ class PersistedNodeColdtag(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: NodeColdtagSchema, /
     ) -> "PersistedNodeColdtag":
-        async def retrieve_events() -> list[
-            PersistedNodeColdtagEvent | PersistedNodeColdtagEventAlertLiquid | PersistedNodeColdtagEventAlertImpact
-        ]:
+        async def retrieve_telemetry_events() -> list[PersistedNodeColdtagEvent]:
             events = await coldtag_persistence.find_node_events_by_node_id(str(data.id))
-            liquids = await coldtag_persistence.find_node_event_alert_liquids_by_node_id(str(data.id))
-            impacts = await coldtag_persistence.find_node_event_alert_impacts_by_node_id(str(data.id))
+            return sorted(events, key=lambda x: x.event_time, reverse=True)
 
-            return sorted([*events, *liquids, *impacts], key=lambda x: x.event_time, reverse=True)
+        async def retrieve_alert_liquid_events() -> list[PersistedNodeColdtagEventAlertLiquid]:
+            liquids = await coldtag_persistence.find_node_event_alert_liquids_by_node_id(str(data.id))
+            return sorted(liquids, key=lambda x: x.event_time, reverse=True)
+
+        async def retrieve_alert_impact_events() -> list[PersistedNodeColdtagEventAlertImpact]:
+            impacts = await coldtag_persistence.find_node_event_alert_impacts_by_node_id(str(data.id))
+            return sorted(impacts, key=lambda x: x.event_time, reverse=True)
 
         return PersistedNodeColdtag(
             id=str(data.id),
             mac_address=data.mac_address,
             identifier=data.identifier,
-            events=retrieve_events,
+            telemetry_events=retrieve_telemetry_events,
+            alert_liquid_events=retrieve_alert_liquid_events,
+            alert_impact_events=retrieve_alert_impact_events,
             deleted=bool(data.deleted),
             created_time=data.created_time,
             updated_time=data.updated_time,
@@ -210,7 +208,7 @@ class PersistedCoreColdtag(BaseModel):
     id: str
     mac_address: str
     identifier: str | None
-    events: Callable[..., Coroutine[Any, Any, list[PersistedCoreColdtagEvent]]]
+    telemetry_events: Callable[..., Coroutine[Any, Any, list[PersistedCoreColdtagEvent]]]
     deleted: bool
     created_time: datetime
     updated_time: datetime
@@ -219,7 +217,7 @@ class PersistedCoreColdtag(BaseModel):
     async def construct_model(
         coldtag_persistence: "ColdtagPersistence", data: CoreColdtagSchema, /
     ) -> "PersistedCoreColdtag":
-        async def retrieve_events() -> list[PersistedCoreColdtagEvent]:
+        async def retrieve_telemetry_events() -> list[PersistedCoreColdtagEvent]:
             events = await coldtag_persistence.find_core_events_by_core_id(str(data.id))
             return sorted(events, key=lambda x: x.event_time, reverse=True)
 
@@ -227,7 +225,7 @@ class PersistedCoreColdtag(BaseModel):
             id=str(data.id),
             mac_address=data.mac_address,
             identifier=data.identifier,
-            events=retrieve_events,
+            telemetry_events=retrieve_telemetry_events,
             deleted=bool(data.deleted),
             created_time=data.created_time,
             updated_time=data.updated_time,

@@ -4,6 +4,11 @@ query CVP_DashboardCoreInfo_DisplayCoreColdtagById($coreId: ID!) {
       id
       macAddress
       identifier
+      telemetryEvents {
+        id
+        eventTime
+        time
+      }
     }
   }
 }

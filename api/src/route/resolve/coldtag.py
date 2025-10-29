@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import Callable, Coroutine
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import strawberry
 
@@ -105,21 +105,27 @@ class NodeColdtagEventAlertImpact:
 
 @strawberry.type
 class NodeColdtag:
-    @strawberry.type
-    class NodeColdtagEvents:
-        basic: list[NodeColdtagEvent]
-        alert_liquid: list[NodeColdtagEventAlertLiquid]
-        alert_impact: list[NodeColdtagEventAlertImpact]
-
     id: strawberry.scalars.ID
     mac_address: str
     identifier: str | None
 
-    _events: strawberry.Private[Callable[..., Coroutine[Any, Any, NodeColdtagEvents]]]
+    _telemetry_events: strawberry.Private[Callable[..., Coroutine[Any, Any, list[NodeColdtagEvent]]]]
 
     @strawberry.field
-    async def events(self) -> NodeColdtagEvents:
-        return await self._events()
+    async def telemetry_events(self) -> list[NodeColdtagEvent]:
+        return await self._telemetry_events()
+
+    _alert_liquid_events: strawberry.Private[Callable[..., Coroutine[Any, Any, list[NodeColdtagEventAlertLiquid]]]]
+
+    @strawberry.field
+    async def alert_liquid_events(self) -> list[NodeColdtagEventAlertLiquid]:
+        return await self._alert_liquid_events()
+
+    _alert_impact_events: strawberry.Private[Callable[..., Coroutine[Any, Any, list[NodeColdtagEventAlertImpact]]]]
+
+    @strawberry.field
+    async def alert_impact_events(self) -> list[NodeColdtagEventAlertImpact]:
+        return await self._alert_impact_events()
 
     deleted: bool
     created_time: datetime
@@ -128,19 +134,15 @@ class NodeColdtag:
 
 @strawberry.type
 class CoreColdtag:
-    @strawberry.type
-    class CoreColdtagEvents:
-        basic: list[CoreColdtagEvent]
-
     id: strawberry.scalars.ID
     mac_address: str
     identifier: str | None
 
-    _events: strawberry.Private[Callable[..., Coroutine[Any, Any, CoreColdtagEvents]]]
+    _telemetry_events: strawberry.Private[Callable[..., Coroutine[Any, Any, list[CoreColdtagEvent]]]]
 
     @strawberry.field
-    async def events(self) -> CoreColdtagEvents:
-        return await self._events()
+    async def telemetry_events(self) -> list[CoreColdtagEvent]:
+        return await self._telemetry_events()
 
     deleted: bool
     created_time: datetime
@@ -236,43 +238,29 @@ async def resolve_node_coldtag_event_alert_impact(
 async def resolve_node_coldtag(
     node_coldtag: PersistedNodeColdtag, /, info: strawberry.Info["AppContext"]
 ) -> NodeColdtag:
-    async def resolve_events() -> NodeColdtag.NodeColdtagEvents:
-        persisted_events = await node_coldtag.events()
-        basic, alert_liquid, alert_impact = await asyncio.gather(
-            asyncio.gather(
-                *[
-                    resolve_node_coldtag_event(event, info=info)
-                    for event in persisted_events
-                    if isinstance(event, PersistedNodeColdtagEvent)
-                ]
-            ),
-            asyncio.gather(
-                *[
-                    resolve_node_coldtag_event_alert_liquid(event, info=info)
-                    for event in persisted_events
-                    if isinstance(event, PersistedNodeColdtagEventAlertLiquid)
-                ]
-            ),
-            asyncio.gather(
-                *[
-                    resolve_node_coldtag_event_alert_impact(event, info=info)
-                    for event in persisted_events
-                    if isinstance(event, PersistedNodeColdtagEventAlertImpact)
-                ]
-            ),
+    async def resolve_telemetry_events() -> list[NodeColdtagEvent]:
+        persisted_events = await node_coldtag.telemetry_events()
+        return await asyncio.gather(*[resolve_node_coldtag_event(event, info=info) for event in persisted_events])
+
+    async def resolve_alert_liquid_events() -> list[NodeColdtagEventAlertLiquid]:
+        persisted_events = await node_coldtag.alert_liquid_events()
+        return await asyncio.gather(
+            *[resolve_node_coldtag_event_alert_liquid(event, info=info) for event in persisted_events]
         )
 
-        return NodeColdtag.NodeColdtagEvents(
-            basic=basic,
-            alert_liquid=alert_liquid,
-            alert_impact=alert_impact,
+    async def resolve_alert_impact_events() -> list[NodeColdtagEventAlertImpact]:
+        persisted_events = await node_coldtag.alert_impact_events()
+        return await asyncio.gather(
+            *[resolve_node_coldtag_event_alert_impact(event, info=info) for event in persisted_events]
         )
 
     return NodeColdtag(
         id=strawberry.scalars.ID(node_coldtag.id),
         mac_address=node_coldtag.mac_address,
         identifier=node_coldtag.identifier,
-        _events=resolve_events,
+        _telemetry_events=resolve_telemetry_events,
+        _alert_liquid_events=resolve_alert_liquid_events,
+        _alert_impact_events=resolve_alert_impact_events,
         deleted=node_coldtag.deleted,
         created_time=node_coldtag.created_time,
         updated_time=node_coldtag.updated_time,
@@ -282,22 +270,15 @@ async def resolve_node_coldtag(
 async def resolve_core_coldtag(
     core_coldtag: PersistedCoreColdtag, /, info: strawberry.Info["AppContext"]
 ) -> CoreColdtag:
-    async def resolve_events() -> CoreColdtag.CoreColdtagEvents:
-        persisted_events = await core_coldtag.events()
-        basic = cast(
-            "list[CoreColdtagEvent]",
-            await asyncio.gather(*[resolve_core_coldtag_event(event, info=info) for event in persisted_events]),
-        )
-
-        return CoreColdtag.CoreColdtagEvents(
-            basic=basic,
-        )
+    async def resolve_telemetry_events() -> list[CoreColdtagEvent]:
+        persisted_events = await core_coldtag.telemetry_events()
+        return await asyncio.gather(*[resolve_core_coldtag_event(event, info=info) for event in persisted_events])
 
     return CoreColdtag(
         id=strawberry.scalars.ID(core_coldtag.id),
         mac_address=core_coldtag.mac_address,
         identifier=core_coldtag.identifier,
-        _events=resolve_events,
+        _telemetry_events=resolve_telemetry_events,
         deleted=core_coldtag.deleted,
         created_time=core_coldtag.created_time,
         updated_time=core_coldtag.updated_time,

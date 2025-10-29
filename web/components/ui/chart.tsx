@@ -24,7 +24,7 @@ type ChartContextProps = {
 
 const ChartContext = React.createContext<ChartContextProps | null>(null)
 
-function useChart() {
+export function useChart() {
   const context = React.useContext(ChartContext)
 
   if (!context) {
@@ -221,7 +221,7 @@ const ChartTooltipContent = React.forwardRef<
                       )}
                       <div
                         className={cn(
-                          'flex flex-1 justify-between leading-none',
+                          'flex flex-1 justify-between gap-1.5 leading-none',
                           nestLabel ? 'items-end' : 'items-center'
                         )}
                       >
@@ -307,7 +307,11 @@ const ChartLegendContent = React.forwardRef<
 ChartLegendContent.displayName = 'ChartLegend'
 
 // Helper to extract item config from a payload.
-function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
+export function getPayloadConfigFromPayload(
+  config: ChartConfig,
+  payload: unknown,
+  key: string
+) {
   if (typeof payload !== 'object' || payload === null) {
     return undefined
   }

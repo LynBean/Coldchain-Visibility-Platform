@@ -4,6 +4,41 @@ query CVP_DashboardNodeInfo_DisplayNodeColdtagById($nodeId: ID!) {
       id
       macAddress
       identifier
+      telemetryEvents {
+        id
+        coreColdtag {
+          id
+        }
+        temperature
+        humidity
+        latitude
+        longitude
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertLiquidEvents {
+        id
+        coreColdtag {
+          id
+        }
+        latitude
+        longitude
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertImpactEvents {
+        id
+        coreColdtag {
+          id
+        }
+        latitude
+        longitude
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
     }
   }
 }

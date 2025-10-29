@@ -1,5 +1,13 @@
 'use client'
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card.tsx'
+import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
 import { useErrorState } from '@/stores/error.tsx'
@@ -7,7 +15,121 @@ import { Cvp_DashboardCoreInfo_DisplayCoreColdtagByIdQuery } from '@/stores/grap
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { useParams } from 'next/navigation.js'
 import React from 'react'
+import RechartsPrimitive, { CartesianGrid, Scatter, ScatterChart, XAxis } from 'recharts'
 import DashboardCoreShowcase from '../../DashboardCoreShowcase.tsx'
+
+const DashboardCoreTelemetryEventsChart: React.FunctionComponent<{
+  events: Cvp_DashboardCoreInfo_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']['telemetryEvents']
+}> = ({ events }) => {
+  type Payload = {
+    date: string
+    y: number
+  }
+
+  const [state, setState] = React.useState<{
+    payload: Payload[]
+  }>({
+    payload: [],
+  })
+
+  React.useEffect(() => {
+    setState((state) => ({
+      ...state,
+      payload: events
+        .toSorted(
+          (a, b) => new Date(a.eventTime).getTime() - new Date(b.eventTime).getTime()
+        )
+        .map((event, index, arr) => {
+          const currentTime = new Date(event.eventTime).getTime()
+          const prevTime = index > 0 ? new Date(arr[index - 1].eventTime).getTime() : 0
+          const timeDiff = index > 0 ? Math.abs(currentTime - prevTime) : 0
+          const variance = Math.min(1, 100000 / (timeDiff + 1)) // closer times → higher variance
+          const randomOffset = (Math.random() - 0.5) * variance
+
+          const baseValue = 1.5 + randomOffset
+          const clampedValue = Math.min(2, Math.max(1, baseValue))
+
+          return {
+            date: event.eventTime,
+            y: clampedValue,
+          } as Payload
+        }),
+    }))
+  }, [events])
+
+  return (
+    <>
+      <Card className="pt-0">
+        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+          <div className="grid flex-1 gap-1">
+            <CardTitle>Telemetry</CardTitle>
+            <CardDescription>Showing telemetry records of all time</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+          <ChartContainer
+            config={
+              { date: { label: 'Date', color: 'var(--chart-2)' } } satisfies ChartConfig
+            }
+            className="aspect-auto h-[250px] w-full"
+          >
+            <ScatterChart data={state.payload}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value)
+                  return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                  })
+                }}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  (({ payload }, ref) => {
+                    return (
+                      <div
+                        ref={ref}
+                        className={tw`border-border/50 bg-background grid min-w-32 items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl`}
+                      >
+                        {payload && payload.length && (
+                          <>
+                            <div className={tw`font-medium`}>
+                              {new Date(payload[0].value as number).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit',
+                                }
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  }) as React.FunctionComponent<
+                    React.ComponentProps<typeof RechartsPrimitive.Tooltip>
+                  >
+                }
+              />
+              <Scatter dataKey="y" fill="var(--color-date)" shape="circle" />
+            </ScatterChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+    </>
+  )
+}
 
 const DashboardCoreInfoPage: React.FunctionComponent = () => {
   const [, { catchError }] = useErrorState()
@@ -94,6 +216,12 @@ const DashboardCoreInfoPage: React.FunctionComponent = () => {
             </div>
           ))}
         </div>
+
+        {state.item && state.item.telemetryEvents.length > 0 && (
+          <div className="w-full px-4 pt-8">
+            <DashboardCoreTelemetryEventsChart events={state.item.telemetryEvents} />
+          </div>
+        )}
       </div>
     </DashboardCoreShowcase>
   )
