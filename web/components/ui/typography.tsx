@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge'
 const variantMap = {
   h1: {
     component: 'h1',
-    className: tw`scroll-m-20 text-balance text-center text-4xl font-extrabold tracking-tight`,
+    className: tw`scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance`,
   },
   h2: {
     component: 'h2',
@@ -21,7 +21,7 @@ const variantMap = {
   },
   p: {
     component: 'p',
-    className: tw`not-first:mt-6 leading-7`,
+    className: tw`leading-7 not-first:mt-6`,
   },
   blockquote: {
     component: 'blockquote',
@@ -29,11 +29,11 @@ const variantMap = {
   },
   'inline-code': {
     component: 'code',
-    className: tw`bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold`,
+    className: tw`relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold`,
   },
   lead: {
     component: 'p',
-    className: tw`text-muted-foreground text-xl`,
+    className: tw`text-xl text-muted-foreground`,
   },
   large: {
     component: 'div',
@@ -41,11 +41,11 @@ const variantMap = {
   },
   small: {
     component: 'small',
-    className: tw`text-sm font-medium leading-none`,
+    className: tw`text-sm leading-none font-medium`,
   },
   muted: {
     component: 'p',
-    className: tw`text-muted-foreground text-sm`,
+    className: tw`text-sm text-muted-foreground`,
   },
 } as const
 

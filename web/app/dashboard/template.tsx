@@ -24,7 +24,7 @@ const DashboardSidebar: React.FunctionComponent = () => {
   return (
     <Sidebar
       variant="inset"
-      className={tw`pl-3 pr-1`}
+      className={tw`pr-1 pl-3`}
       collapsible="icon"
       onMouseEnter={() => {
         setSidebarOpen(true)

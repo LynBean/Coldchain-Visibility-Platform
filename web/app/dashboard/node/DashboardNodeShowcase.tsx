@@ -57,9 +57,9 @@ const DashboardNodeShowcase: React.FunctionComponent<React.PropsWithChildren> = 
     <DashboardShowcaseTemplate
       sidePanel={
         <div
-          className={tw`relative flex h-full w-full flex-col border-l border-r border-l-gray-300 border-r-gray-300`}
+          className={tw`relative flex h-full w-full flex-col border-r border-l border-r-gray-300 border-l-gray-300`}
         >
-          <div className={tw`absolute left-0 top-0 z-50 w-full rounded-2xl p-4`}>
+          <div className={tw`absolute top-0 left-0 z-50 w-full rounded-2xl p-4`}>
             <Button
               variant="outline"
               size="icon"
@@ -72,7 +72,7 @@ const DashboardNodeShowcase: React.FunctionComponent<React.PropsWithChildren> = 
           </div>
 
           <div
-            className={tw`flex w-full flex-col overflow-y-auto overflow-x-hidden pt-20 scrollbar-hide`}
+            className={tw`scrollbar-hide flex w-full flex-col overflow-x-hidden overflow-y-auto pt-20`}
           >
             {state.items.map((item, index) => (
               <Button
@@ -94,7 +94,7 @@ const DashboardNodeShowcase: React.FunctionComponent<React.PropsWithChildren> = 
                   debounceScrollColdtagIdRef.current = null
                 }}
                 variant="outline"
-                className={tw`flex-0 bg-muted relative m-0 flex h-28 w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-none border-none`}
+                className={tw`relative m-0 flex h-28 w-full flex-0 cursor-pointer flex-row items-center justify-start gap-2 rounded-none border-none bg-muted`}
                 onClick={() => {
                   router.replace(`/dashboard/node/${item.id}/info`)
                 }}
@@ -109,14 +109,14 @@ const DashboardNodeShowcase: React.FunctionComponent<React.PropsWithChildren> = 
                   <div className={tw`flex w-full flex-row flex-wrap gap-1`}>
                     <Typography
                       variant="inline-code"
-                      className="bg-muted-foreground text-muted text-sm"
+                      className="bg-muted-foreground text-sm text-muted"
                     >
                       {item.id}
                     </Typography>
 
                     <Typography
                       variant="inline-code"
-                      className="bg-muted-foreground text-muted overflow-ellipsis text-sm"
+                      className="bg-muted-foreground text-sm overflow-ellipsis text-muted"
                     >
                       {item.macAddress}
                     </Typography>
@@ -124,7 +124,7 @@ const DashboardNodeShowcase: React.FunctionComponent<React.PropsWithChildren> = 
 
                   <Typography
                     variant="lead"
-                    className="text-muted-foreground overflow-ellipsis text-left text-sm"
+                    className="text-left text-sm overflow-ellipsis text-muted-foreground"
                   >
                     {item.identifier}
                   </Typography>

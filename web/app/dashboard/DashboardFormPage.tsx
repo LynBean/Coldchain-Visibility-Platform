@@ -74,7 +74,7 @@ const DashboardFormPage: React.FunctionComponent<DashboardFormPageProps> = (prop
               exit={{ opacity: 0 }}
             >
               <div
-                className={tw`h-full w-full overflow-y-auto overflow-x-hidden p-12`}
+                className={tw`h-full w-full overflow-x-hidden overflow-y-auto p-12`}
                 style={{
                   paddingBottom: `calc(${layoutState.bottom}px + 3rem)`,
                 }}

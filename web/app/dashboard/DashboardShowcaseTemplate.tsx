@@ -10,7 +10,7 @@ const DashboardShowcaseTemplate: React.FunctionComponent<
     <div className={tw`flex h-lvh w-full flex-row`}>
       <div className={tw`h-full w-[328px] shrink-0`}>{sidePanel}</div>
 
-      <div className={tw`h-full w-full overflow-y-auto overflow-x-hidden`}>
+      <div className={tw`h-full w-full overflow-x-hidden overflow-y-auto`}>
         {children}
       </div>
     </div>
