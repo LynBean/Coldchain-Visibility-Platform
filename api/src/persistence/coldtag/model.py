@@ -22,6 +22,8 @@ class PersistedCoreColdtagEvent(BaseModel):
 
     id: str
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
+    latitude: float | None
+    longitude: float | None
     event_time: datetime
     time: datetime
 
@@ -37,6 +39,8 @@ class PersistedCoreColdtagEvent(BaseModel):
         return PersistedCoreColdtagEvent(
             id=str(data.id),
             core_coldtag=retrieve_core_coldtag,
+            latitude=data.latitude,
+            longitude=data.longitude,
             event_time=data.event_time,
             time=data.time,
         )
@@ -50,8 +54,6 @@ class PersistedNodeColdtagEvent(BaseModel):
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
     temperature: float | None
     humidity: float | None
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -76,8 +78,6 @@ class PersistedNodeColdtagEvent(BaseModel):
             core_coldtag=retrieve_core_coldtag,
             temperature=data.temperature,
             humidity=data.humidity,
-            latitude=data.latitude,
-            longitude=data.longitude,
             core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,
@@ -90,8 +90,6 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -114,8 +112,6 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
             id=str(data.id),
             node_coldtag=retrieve_node_coldtag,
             core_coldtag=retrieve_core_coldtag,
-            latitude=data.latitude,
-            longitude=data.longitude,
             core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,
@@ -128,8 +124,6 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
     core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -152,8 +146,6 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
             id=str(data.id),
             node_coldtag=retrieve_node_coldtag,
             core_coldtag=retrieve_core_coldtag,
-            latitude=data.latitude,
-            longitude=data.longitude,
             core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,

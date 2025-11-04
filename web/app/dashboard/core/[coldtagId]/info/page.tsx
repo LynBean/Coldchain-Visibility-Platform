@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button.tsx'
 import {
   Card,
   CardContent,
@@ -8,21 +9,59 @@ import {
   CardTitle,
 } from '@/components/ui/card.tsx'
 import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart.tsx'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
 import { useErrorState } from '@/stores/error.tsx'
 import { Cvp_DashboardCoreInfo_DisplayCoreColdtagByIdQuery } from '@/stores/graphql/generated.ts'
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
+import { ExternalLink } from 'lucide-react'
 import { useParams } from 'next/navigation.js'
 import React from 'react'
 import RechartsPrimitive, { CartesianGrid, Scatter, ScatterChart, XAxis } from 'recharts'
 import DashboardCoreShowcase from '../../DashboardCoreShowcase.tsx'
+
+const DashboardCoreEventDialog: React.FunctionComponent<
+  React.PropsWithChildren & {
+    title: string
+    description: string | React.ReactNode
+    open: boolean
+    onClose: () => void
+  }
+> = ({ open, onClose, ...props }) => {
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose()
+        }
+      }}
+    >
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{props.title}</DialogTitle>
+          {props.description}
+        </DialogHeader>
+
+        {props.children}
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 const DashboardCoreTelemetryEventsChart: React.FunctionComponent<{
   events: Cvp_DashboardCoreInfo_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']['telemetryEvents']
 }> = ({ events }) => {
   type Payload = {
     date: string
+    latitude?: number
+    longitude?: number
     y: number
   }
 
@@ -30,6 +69,13 @@ const DashboardCoreTelemetryEventsChart: React.FunctionComponent<{
     payload: Payload[]
   }>({
     payload: [],
+  })
+
+  const [dialogState, setDialogState] = React.useState<{
+    open: boolean
+    current?: Payload
+  }>({
+    open: false,
   })
 
   React.useEffect(() => {
@@ -51,6 +97,8 @@ const DashboardCoreTelemetryEventsChart: React.FunctionComponent<{
 
           return {
             date: event.eventTime,
+            latitude: event.coordinate?.latitude,
+            longitude: event.coordinate?.longitude,
             y: clampedValue,
           } as Payload
         }),
@@ -73,7 +121,22 @@ const DashboardCoreTelemetryEventsChart: React.FunctionComponent<{
             }
             className="aspect-auto h-[250px] w-full"
           >
-            <ScatterChart data={state.payload}>
+            <ScatterChart
+              data={state.payload}
+              onClick={(chartState) => {
+                if (
+                  chartState &&
+                  chartState.activePayload &&
+                  chartState.activePayload.length
+                ) {
+                  setDialogState((state) => ({
+                    ...state,
+                    open: true,
+                    current: chartState.activePayload?.[0].payload as Payload,
+                  }))
+                }
+              }}
+            >
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -127,6 +190,74 @@ const DashboardCoreTelemetryEventsChart: React.FunctionComponent<{
           </ChartContainer>
         </CardContent>
       </Card>
+
+      {dialogState.current && (
+        <DashboardCoreEventDialog
+          title="Telemetry Event"
+          description={
+            <div className={tw`flex flex-row items-center gap-2`}>
+              <span>Recorded at</span>
+              <Typography variant="inline-code" className={tw`text-gray-600`}>
+                {new Date(dialogState.current.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                })}
+              </Typography>
+            </div>
+          }
+          open={dialogState.open}
+          onClose={() => {
+            setDialogState((state) => ({ ...state, open: false }))
+          }}
+        >
+          <div className={tw`flex flex-col items-end gap-2`}>
+            {(
+              [
+                {
+                  title:
+                    dialogState.current.latitude != null &&
+                    dialogState.current.longitude != null
+                      ? 'View on map'
+                      : 'Map not available',
+                  disabled: !(
+                    dialogState.current.latitude != null &&
+                    dialogState.current.longitude != null
+                  ),
+                  onClick: () => {
+                    window.open(
+                      `https://www.google.com/maps?q=${dialogState.current?.latitude},${dialogState.current?.longitude}`,
+                      '_blank',
+                      'noopener,noreferrer'
+                    )
+                  },
+                },
+              ] as {
+                title: string
+                disabled?: boolean
+                onClick: () => void
+              }[]
+            ).map(({ title, disabled, onClick }, index) => (
+              <div key={index} className={tw`flex items-center justify-start`}>
+                <div className={tw`flex flex-col gap-1`}>
+                  <Button
+                    disabled={disabled}
+                    className="flex flex-row items-center justify-center"
+                    variant="outline"
+                    onClick={onClick}
+                  >
+                    <ExternalLink />
+                    {title}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </DashboardCoreEventDialog>
+      )}
     </>
   )
 }

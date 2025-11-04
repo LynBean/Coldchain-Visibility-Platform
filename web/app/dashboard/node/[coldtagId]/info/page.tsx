@@ -20,7 +20,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog.tsx'
@@ -63,7 +62,7 @@ const DashboardNodeEventDialog: React.FunctionComponent<
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
-          <DialogDescription>{props.description}</DialogDescription>
+          {props.description}
         </DialogHeader>
 
         {props.children}
@@ -107,8 +106,8 @@ const DashboardNodeTelemetryEventsChart: React.FunctionComponent<{
               date: event.eventTime,
               temperature: event.temperature,
               humidity: event.humidity,
-              latitude: event.latitude,
-              longitude: event.longitude,
+              latitude: event.coordinate?.latitude,
+              longitude: event.coordinate?.longitude,
               coreColdtagId: event.coreColdtag.id,
             }) as Payload
         )
@@ -297,7 +296,15 @@ const DashboardNodeTelemetryEventsChart: React.FunctionComponent<{
                   },
                 },
                 {
-                  title: 'View on map',
+                  title:
+                    dialogState.current.latitude != null &&
+                    dialogState.current.longitude != null
+                      ? 'View on map'
+                      : 'Map not available',
+                  disabled: !(
+                    dialogState.current.latitude != null &&
+                    dialogState.current.longitude != null
+                  ),
                   onClick: () => {
                     window.open(
                       `https://www.google.com/maps?q=${dialogState.current?.latitude},${dialogState.current?.longitude}`,
@@ -308,12 +315,14 @@ const DashboardNodeTelemetryEventsChart: React.FunctionComponent<{
                 },
               ] as {
                 title: string
+                disabled?: boolean
                 onClick: () => void
               }[]
-            ).map(({ title, onClick }, index) => (
+            ).map(({ title, disabled, onClick }, index) => (
               <div key={index} className={tw`flex items-center justify-start`}>
                 <div className={tw`flex flex-col gap-1`}>
                   <Button
+                    disabled={disabled}
                     className="flex flex-row items-center justify-center"
                     variant="outline"
                     onClick={onClick}
@@ -342,8 +351,8 @@ const DashboardNodeAlertEventsChart: React.FunctionComponent<{
     type: 'liquid' | 'impact'
     liquid?: number
     impact?: number
-    latitude: number
-    longitude: number
+    latitude?: number
+    longitude?: number
     coreColdtagId: string
   }
 
@@ -389,8 +398,8 @@ const DashboardNodeAlertEventsChart: React.FunctionComponent<{
               event.__typename === 'NodeColdtagEventAlertImpact'
                 ? clampedValue
                 : undefined,
-            latitude: event.latitude ?? 0,
-            longitude: event.longitude ?? 0,
+            latitude: event.coordinate?.latitude,
+            longitude: event.coordinate?.longitude,
             coreColdtagId: event.coreColdtag.id,
           } as Payload
         }),
@@ -547,7 +556,15 @@ const DashboardNodeAlertEventsChart: React.FunctionComponent<{
                   },
                 },
                 {
-                  title: 'View on map',
+                  title:
+                    dialogState.current.latitude != null &&
+                    dialogState.current.longitude != null
+                      ? 'View on map'
+                      : 'Map not available',
+                  disabled: !(
+                    dialogState.current.latitude != null &&
+                    dialogState.current.longitude != null
+                  ),
                   onClick: () => {
                     window.open(
                       `https://www.google.com/maps?q=${dialogState.current?.latitude},${dialogState.current?.longitude}`,
@@ -558,12 +575,14 @@ const DashboardNodeAlertEventsChart: React.FunctionComponent<{
                 },
               ] as {
                 title: string
+                disabled?: boolean
                 onClick: () => void
               }[]
-            ).map(({ title, onClick }, index) => (
+            ).map(({ title, disabled, onClick }, index) => (
               <div key={index} className={tw`flex items-center justify-start`}>
                 <div className={tw`flex flex-col gap-1`}>
                   <Button
+                    disabled={disabled}
                     className="flex flex-row items-center justify-center"
                     variant="outline"
                     onClick={onClick}

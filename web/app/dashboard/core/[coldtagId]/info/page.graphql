@@ -6,6 +6,10 @@ query CVP_DashboardCoreInfo_DisplayCoreColdtagById($coreId: ID!) {
       identifier
       telemetryEvents {
         id
+        coordinate {
+          latitude
+          longitude
+        }
         eventTime
         time
       }

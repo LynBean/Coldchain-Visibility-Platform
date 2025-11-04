@@ -248,6 +248,30 @@ class ColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def find_core_event_by_closest_time(
+        self, core_id: str, /, time: datetime
+    ) -> PersistedCoreColdtagEvent | None:
+        async def __query(client: PgConnection) -> PersistedCoreColdtagEvent | None:
+            row = cast(
+                "PgRecord",
+                await client.fetchrow(
+                    """
+                        SELECT * FROM core_coldtag_event
+                        WHERE core_coldtag_id = $1
+                        ORDER BY ABS(EXTRACT(EPOCH FROM (event_time - $2))) ASC
+                        LIMIT 1
+                    """,
+                    int(core_id),
+                    time,
+                ),
+            )
+            if row is None:
+                return None
+
+            return await PersistedCoreColdtagEvent.construct_model(self, CoreColdtagEventSchema(**row))
+
+        return await self._commit(__query)
+
     async def find_node_events_by_node_id(self, node_id: str, /) -> list[PersistedNodeColdtagEvent]:
         async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
             rows = await client.fetch(
@@ -483,6 +507,8 @@ class ColdtagPersistence(BasePersistence):
         core_id: str,
         /,
         *,
+        latitude: float | None,
+        longitude: float | None,
         time: datetime,
     ) -> PersistedCoreColdtagEvent:
         async def __query(client: PgConnection) -> CoreColdtagEventSchema:
@@ -492,13 +518,19 @@ class ColdtagPersistence(BasePersistence):
                     """
                     INSERT INTO core_coldtag_event (
                         core_coldtag_id,
+                        latitude,
+                        longitude,
                         event_time
                     ) VALUES (
                         $1,
-                        $2
+                        $2,
+                        $3,
+                        $4
                     ) RETURNING *
                     """,
                     int(core_id),
+                    latitude,
+                    longitude,
                     time,
                 ),
             )
@@ -516,8 +548,6 @@ class ColdtagPersistence(BasePersistence):
         core_id: str,
         temperature: float | None = None,
         humidity: float | None = None,
-        latitude: float | None,
-        longitude: float | None,
         core_received_time: datetime,
         time: datetime,
     ) -> PersistedNodeColdtagEvent:
@@ -531,8 +561,6 @@ class ColdtagPersistence(BasePersistence):
                         core_coldtag_id,
                         temperature,
                         humidity,
-                        latitude,
-                        longitude,
                         core_coldtag_received_time,
                         event_time
                     ) VALUES (
@@ -541,17 +569,13 @@ class ColdtagPersistence(BasePersistence):
                         $3,
                         $4,
                         $5,
-                        $6,
-                        $7,
-                        $8
+                        $6
                     ) RETURNING *
                     """,
                     int(node_id),
                     int(core_id),
                     temperature,
                     humidity,
-                    latitude,
-                    longitude,
                     core_received_time,
                     time,
                 ),
@@ -568,8 +592,6 @@ class ColdtagPersistence(BasePersistence):
         /,
         *,
         core_id: str,
-        latitude: float | None,
-        longitude: float | None,
         core_received_time: datetime,
         time: datetime,
     ) -> PersistedNodeColdtagEventAlertLiquid:
@@ -581,23 +603,17 @@ class ColdtagPersistence(BasePersistence):
                     INSERT INTO node_coldtag_event_alert_liquid (
                         node_coldtag_id,
                         core_coldtag_id,
-                        latitude,
-                        longitude,
                         core_coldtag_received_time,
                         event_time
                     ) VALUES (
                         $1,
                         $2,
                         $3,
-                        $4,
-                        $5,
-                        $6
+                        $4
                     ) RETURNING *
                     """,
                     int(node_id),
                     int(core_id),
-                    latitude,
-                    longitude,
                     core_received_time,
                     time,
                 ),
@@ -614,8 +630,6 @@ class ColdtagPersistence(BasePersistence):
         /,
         *,
         core_id: str,
-        latitude: float | None,
-        longitude: float | None,
         core_received_time: datetime,
         time: datetime,
     ) -> PersistedNodeColdtagEventAlertImpact:
@@ -627,23 +641,17 @@ class ColdtagPersistence(BasePersistence):
                     INSERT INTO node_coldtag_event_alert_impact (
                         node_coldtag_id,
                         core_coldtag_id,
-                        latitude,
-                        longitude,
                         core_coldtag_received_time,
                         event_time
                     ) VALUES (
                         $1,
                         $2,
                         $3,
-                        $4,
-                        $5,
-                        $6
+                        $4
                     ) RETURNING *
                     """,
                     int(node_id),
                     int(core_id),
-                    latitude,
-                    longitude,
                     core_received_time,
                     time,
                 ),

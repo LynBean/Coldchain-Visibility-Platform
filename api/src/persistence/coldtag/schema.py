@@ -24,6 +24,8 @@ class NodeColdtagSchema(BaseModel):
 class CoreColdtagEventSchema(BaseModel):
     id: int
     core_coldtag_id: int
+    latitude: float | None
+    longitude: float | None
     event_time: datetime
     time: datetime
 
@@ -34,8 +36,6 @@ class NodeColdtagEventSchema(BaseModel):
     core_coldtag_id: int
     temperature: float | None
     humidity: float | None
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -45,8 +45,6 @@ class NodeColdtagEventAlertLiquidSchema(BaseModel):
     id: int
     node_coldtag_id: int
     core_coldtag_id: int
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -56,8 +54,6 @@ class NodeColdtagEventAlertImpactSchema(BaseModel):
     id: int
     node_coldtag_id: int
     core_coldtag_id: int
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime

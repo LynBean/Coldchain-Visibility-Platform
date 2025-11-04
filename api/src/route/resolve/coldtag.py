@@ -19,6 +19,12 @@ if TYPE_CHECKING:
 
 
 @strawberry.type
+class EventCoordinate:
+    latitude: float
+    longitude: float
+
+
+@strawberry.type
 class CoreColdtagEvent:
     id: strawberry.scalars.ID
 
@@ -28,6 +34,7 @@ class CoreColdtagEvent:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
+    coordinate: EventCoordinate | None
     event_time: datetime
     time: datetime
 
@@ -48,10 +55,14 @@ class NodeColdtagEvent:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
+    _coordinate: strawberry.Private[Callable[..., Coroutine[Any, Any, EventCoordinate | None]]]
+
+    @strawberry.field
+    async def coordinate(self) -> EventCoordinate | None:
+        return await self._coordinate()
+
     temperature: float | None
     humidity: float | None
-    latitude: float | None
-    longitude: float | None
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -73,8 +84,12 @@ class NodeColdtagEventAlertLiquid:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
-    latitude: float | None
-    longitude: float | None
+    _coordinate: strawberry.Private[Callable[..., Coroutine[Any, Any, EventCoordinate | None]]]
+
+    @strawberry.field
+    async def coordinate(self) -> EventCoordinate | None:
+        return await self._coordinate()
+
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -96,8 +111,12 @@ class NodeColdtagEventAlertImpact:
     async def core_coldtag(self) -> "CoreColdtag":
         return await self._core_coldtag()
 
-    latitude: float | None
-    longitude: float | None
+    _coordinate: strawberry.Private[Callable[..., Coroutine[Any, Any, EventCoordinate | None]]]
+
+    @strawberry.field
+    async def coordinate(self) -> EventCoordinate | None:
+        return await self._coordinate()
+
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
@@ -152,13 +171,20 @@ class CoreColdtag:
 async def resolve_core_coldtag_event(
     coldtag_event: PersistedCoreColdtagEvent, /, info: strawberry.Info["AppContext"]
 ) -> CoreColdtagEvent:
-    async def _resolve_core_coldtag() -> CoreColdtag:
+    async def __core_coldtag() -> CoreColdtag:
         core_coldtag = await coldtag_event.core_coldtag()
         return await resolve_core_coldtag(core_coldtag, info=info)
 
+    coordinate = (
+        EventCoordinate(latitude=coldtag_event.latitude, longitude=coldtag_event.longitude)
+        if isinstance(coldtag_event.latitude, float) and isinstance(coldtag_event.longitude, float)
+        else None
+    )
+
     return CoreColdtagEvent(
         id=strawberry.scalars.ID(coldtag_event.id),
-        _core_coldtag=_resolve_core_coldtag,
+        _core_coldtag=__core_coldtag,
+        coordinate=coordinate,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
     )
@@ -167,22 +193,35 @@ async def resolve_core_coldtag_event(
 async def resolve_node_coldtag_event(
     coldtag_event: PersistedNodeColdtagEvent, /, info: strawberry.Info["AppContext"]
 ) -> NodeColdtagEvent:
-    async def _resolve_node_coldtag() -> NodeColdtag:
+    async def __node_coldtag() -> NodeColdtag:
         coldtag = await coldtag_event.node_coldtag()
         return await resolve_node_coldtag(coldtag, info=info)
 
-    async def _resolve_core_coldtag() -> CoreColdtag:
+    async def __core_coldtag() -> CoreColdtag:
         coldtag = await coldtag_event.core_coldtag()
         return await resolve_core_coldtag(coldtag, info=info)
 
+    async def __coordinate() -> EventCoordinate | None:
+        coldtag_persistence = info.context.coldtag_persistence
+        core_coldtag = await coldtag_event.core_coldtag()
+        closest_event = await coldtag_persistence.find_core_event_by_closest_time(
+            core_coldtag.id, time=coldtag_event.event_time
+        )
+        if closest_event is None:
+            return None
+
+        if not (isinstance(closest_event.latitude, float) and isinstance(closest_event.longitude, float)):
+            return None
+
+        return EventCoordinate(latitude=closest_event.latitude, longitude=closest_event.longitude)
+
     return NodeColdtagEvent(
         id=strawberry.scalars.ID(coldtag_event.id),
-        _node_coldtag=_resolve_node_coldtag,
-        _core_coldtag=_resolve_core_coldtag,
+        _node_coldtag=__node_coldtag,
+        _core_coldtag=__core_coldtag,
+        _coordinate=__coordinate,
         temperature=coldtag_event.temperature,
         humidity=coldtag_event.humidity,
-        latitude=coldtag_event.latitude,
-        longitude=coldtag_event.longitude,
         core_coldtag_received_time=coldtag_event.core_coldtag_received_time,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
@@ -192,20 +231,33 @@ async def resolve_node_coldtag_event(
 async def resolve_node_coldtag_event_alert_liquid(
     coldtag_event: PersistedNodeColdtagEventAlertLiquid, /, info: strawberry.Info["AppContext"]
 ) -> NodeColdtagEventAlertLiquid:
-    async def _resolve_node_coldtag() -> NodeColdtag:
+    async def __node_coldtag() -> NodeColdtag:
         node_coldtag = await coldtag_event.node_coldtag()
         return await resolve_node_coldtag(node_coldtag, info=info)
 
-    async def _resolve_core_coldtag() -> CoreColdtag:
+    async def __core_coldtag() -> CoreColdtag:
         core_coldtag = await coldtag_event.core_coldtag()
         return await resolve_core_coldtag(core_coldtag, info=info)
 
+    async def __coordinate() -> EventCoordinate | None:
+        coldtag_persistence = info.context.coldtag_persistence
+        core_coldtag = await coldtag_event.core_coldtag()
+        closest_event = await coldtag_persistence.find_core_event_by_closest_time(
+            core_coldtag.id, time=coldtag_event.event_time
+        )
+        if closest_event is None:
+            return None
+
+        if not (isinstance(closest_event.latitude, float) and isinstance(closest_event.longitude, float)):
+            return None
+
+        return EventCoordinate(latitude=closest_event.latitude, longitude=closest_event.longitude)
+
     return NodeColdtagEventAlertLiquid(
         id=strawberry.scalars.ID(coldtag_event.id),
-        _node_coldtag=_resolve_node_coldtag,
-        _core_coldtag=_resolve_core_coldtag,
-        latitude=coldtag_event.latitude,
-        longitude=coldtag_event.longitude,
+        _node_coldtag=__node_coldtag,
+        _core_coldtag=__core_coldtag,
+        _coordinate=__coordinate,
         core_coldtag_received_time=coldtag_event.core_coldtag_received_time,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
@@ -215,20 +267,33 @@ async def resolve_node_coldtag_event_alert_liquid(
 async def resolve_node_coldtag_event_alert_impact(
     coldtag_event: PersistedNodeColdtagEventAlertImpact, /, info: strawberry.Info["AppContext"]
 ) -> NodeColdtagEventAlertImpact:
-    async def _resolve_node_coldtag() -> NodeColdtag:
+    async def __node_coldtag() -> NodeColdtag:
         node_coldtag = await coldtag_event.node_coldtag()
         return await resolve_node_coldtag(node_coldtag, info=info)
 
-    async def _resolve_core_coldtag() -> CoreColdtag:
+    async def __core_coldtag() -> CoreColdtag:
         core_coldtag = await coldtag_event.core_coldtag()
         return await resolve_core_coldtag(core_coldtag, info=info)
 
+    async def __coordinate() -> EventCoordinate | None:
+        coldtag_persistence = info.context.coldtag_persistence
+        core_coldtag = await coldtag_event.core_coldtag()
+        closest_event = await coldtag_persistence.find_core_event_by_closest_time(
+            core_coldtag.id, time=coldtag_event.event_time
+        )
+        if closest_event is None:
+            return None
+
+        if not (isinstance(closest_event.latitude, float) and isinstance(closest_event.longitude, float)):
+            return None
+
+        return EventCoordinate(latitude=closest_event.latitude, longitude=closest_event.longitude)
+
     return NodeColdtagEventAlertImpact(
         id=strawberry.scalars.ID(coldtag_event.id),
-        _node_coldtag=_resolve_node_coldtag,
-        _core_coldtag=_resolve_core_coldtag,
-        latitude=coldtag_event.latitude,
-        longitude=coldtag_event.longitude,
+        _node_coldtag=__node_coldtag,
+        _core_coldtag=__core_coldtag,
+        _coordinate=__coordinate,
         core_coldtag_received_time=coldtag_event.core_coldtag_received_time,
         event_time=coldtag_event.event_time,
         time=coldtag_event.time,
@@ -238,17 +303,17 @@ async def resolve_node_coldtag_event_alert_impact(
 async def resolve_node_coldtag(
     node_coldtag: PersistedNodeColdtag, /, info: strawberry.Info["AppContext"]
 ) -> NodeColdtag:
-    async def resolve_telemetry_events() -> list[NodeColdtagEvent]:
+    async def __telemetry_events() -> list[NodeColdtagEvent]:
         persisted_events = await node_coldtag.telemetry_events()
         return await asyncio.gather(*[resolve_node_coldtag_event(event, info=info) for event in persisted_events])
 
-    async def resolve_alert_liquid_events() -> list[NodeColdtagEventAlertLiquid]:
+    async def __alert_liquid_events() -> list[NodeColdtagEventAlertLiquid]:
         persisted_events = await node_coldtag.alert_liquid_events()
         return await asyncio.gather(
             *[resolve_node_coldtag_event_alert_liquid(event, info=info) for event in persisted_events]
         )
 
-    async def resolve_alert_impact_events() -> list[NodeColdtagEventAlertImpact]:
+    async def __alert_impact_events() -> list[NodeColdtagEventAlertImpact]:
         persisted_events = await node_coldtag.alert_impact_events()
         return await asyncio.gather(
             *[resolve_node_coldtag_event_alert_impact(event, info=info) for event in persisted_events]
@@ -258,9 +323,9 @@ async def resolve_node_coldtag(
         id=strawberry.scalars.ID(node_coldtag.id),
         mac_address=node_coldtag.mac_address,
         identifier=node_coldtag.identifier,
-        _telemetry_events=resolve_telemetry_events,
-        _alert_liquid_events=resolve_alert_liquid_events,
-        _alert_impact_events=resolve_alert_impact_events,
+        _telemetry_events=__telemetry_events,
+        _alert_liquid_events=__alert_liquid_events,
+        _alert_impact_events=__alert_impact_events,
         deleted=node_coldtag.deleted,
         created_time=node_coldtag.created_time,
         updated_time=node_coldtag.updated_time,
@@ -270,7 +335,7 @@ async def resolve_node_coldtag(
 async def resolve_core_coldtag(
     core_coldtag: PersistedCoreColdtag, /, info: strawberry.Info["AppContext"]
 ) -> CoreColdtag:
-    async def resolve_telemetry_events() -> list[CoreColdtagEvent]:
+    async def __telemetry_events() -> list[CoreColdtagEvent]:
         persisted_events = await core_coldtag.telemetry_events()
         return await asyncio.gather(*[resolve_core_coldtag_event(event, info=info) for event in persisted_events])
 
@@ -278,7 +343,7 @@ async def resolve_core_coldtag(
         id=strawberry.scalars.ID(core_coldtag.id),
         mac_address=core_coldtag.mac_address,
         identifier=core_coldtag.identifier,
-        _telemetry_events=resolve_telemetry_events,
+        _telemetry_events=__telemetry_events,
         deleted=core_coldtag.deleted,
         created_time=core_coldtag.created_time,
         updated_time=core_coldtag.updated_time,

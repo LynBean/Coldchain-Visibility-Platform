@@ -116,14 +116,24 @@ class AppMQTT(BaseModel):
     ) -> None:
         while not self.is_shutdown.is_set():
             await asyncio.gather(*[function(t) for t in devices])
-            await asyncio.sleep(delay())
+
+            def __delay() -> float:
+                return uniform(delay() - 100, delay() + 100)
+
+            await asyncio.sleep(__delay())
 
     async def publish_core_event(self) -> asyncio.Task:
         async def create(core: AppMQTT.MockCore) -> None:
             logger.info(f"Publishing core_event/{core.mac_address}/telemetry")
             await self.client.publish(
                 topic=f"core_event/{core.mac_address}/telemetry",
-                payload=json.dumps({"event_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")}),
+                payload=json.dumps(
+                    {
+                        "latitude": uniform(10.5, 75.5),
+                        "longitude": uniform(10.5, 75.5),
+                        "event_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    }
+                ),
             )
 
         return asyncio.create_task(
@@ -144,8 +154,6 @@ class AppMQTT(BaseModel):
                         "core_coldtag_mac_address": choice(self.core_devices).mac_address,
                         "temperature": uniform(10.5, 75.5),
                         "humidity": uniform(10.5, 75.5),
-                        "latitude": uniform(10.5, 75.5),
-                        "longitude": uniform(10.5, 75.5),
                         "core_coldtag_received_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "event_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     }
@@ -168,8 +176,6 @@ class AppMQTT(BaseModel):
                 payload=json.dumps(
                     {
                         "core_coldtag_mac_address": choice(self.core_devices).mac_address,
-                        "latitude": uniform(10.5, 75.5),
-                        "longitude": uniform(10.5, 75.5),
                         "core_coldtag_received_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "event_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     }
@@ -192,8 +198,6 @@ class AppMQTT(BaseModel):
                 payload=json.dumps(
                     {
                         "core_coldtag_mac_address": choice(self.core_devices).mac_address,
-                        "latitude": uniform(10.5, 75.5),
-                        "longitude": uniform(10.5, 75.5),
                         "core_coldtag_received_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "event_time": datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     }

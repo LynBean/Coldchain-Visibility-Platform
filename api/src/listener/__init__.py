@@ -70,6 +70,8 @@ class AppMQTT(BaseModel):
                             )
 
                             core_mac_address = topics[1]
+                            latitude = float(payload["latitude"])
+                            longitude = float(payload["longitude"])
                             event_time = datetime.strptime(payload["event_time"], "%Y-%m-%dT%H:%M:%SZ").astimezone(UTC)
 
                             persisted_core = await coldtag_persistence.find_core_by_mac_address(core_mac_address)
@@ -78,6 +80,8 @@ class AppMQTT(BaseModel):
 
                             await coldtag_persistence.create_core_event(
                                 persisted_core.id,
+                                latitude=latitude,
+                                longitude=longitude,
                                 time=event_time,
                             )
 
@@ -112,8 +116,6 @@ class AppMQTT(BaseModel):
                             core_mac_address = payload["core_coldtag_mac_address"]
                             temperature = float(payload["temperature"])
                             humidity = float(payload["humidity"])
-                            latitude = float(payload["latitude"])
-                            longitude = float(payload["longitude"])
                             core_coldtag_received_time = datetime.strptime(
                                 payload["core_coldtag_received_time"], "%Y-%m-%dT%H:%M:%SZ"
                             ).astimezone(UTC)
@@ -130,8 +132,6 @@ class AppMQTT(BaseModel):
                                 core_id=persisted_core.id,
                                 temperature=temperature,
                                 humidity=humidity,
-                                latitude=latitude,
-                                longitude=longitude,
                                 core_received_time=core_coldtag_received_time,
                                 time=event_time,
                             )
@@ -165,8 +165,6 @@ class AppMQTT(BaseModel):
 
                             node_mac_address = topics[1]
                             core_mac_address = payload["core_coldtag_mac_address"]
-                            latitude = float(payload["latitude"])
-                            longitude = float(payload["longitude"])
                             core_coldtag_received_time = datetime.strptime(
                                 payload["core_coldtag_received_time"], "%Y-%m-%dT%H:%M:%SZ"
                             ).astimezone(UTC)
@@ -181,8 +179,6 @@ class AppMQTT(BaseModel):
                             await coldtag_persistence.create_node_event_alert_impact(
                                 persisted_node.id,
                                 core_id=persisted_core.id,
-                                latitude=latitude,
-                                longitude=longitude,
                                 core_received_time=core_coldtag_received_time,
                                 time=event_time,
                             )
@@ -216,8 +212,6 @@ class AppMQTT(BaseModel):
 
                             node_mac_address = topics[1]
                             core_mac_address = payload["core_coldtag_mac_address"]
-                            latitude = float(payload["latitude"])
-                            longitude = float(payload["longitude"])
                             core_coldtag_received_time = datetime.strptime(
                                 payload["core_coldtag_received_time"], "%Y-%m-%dT%H:%M:%SZ"
                             ).astimezone(UTC)
@@ -232,8 +226,6 @@ class AppMQTT(BaseModel):
                             await coldtag_persistence.create_node_event_alert_liquid(
                                 persisted_node.id,
                                 core_id=persisted_core.id,
-                                latitude=latitude,
-                                longitude=longitude,
                                 core_received_time=core_coldtag_received_time,
                                 time=event_time,
                             )
