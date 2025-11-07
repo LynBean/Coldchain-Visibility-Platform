@@ -55,7 +55,7 @@ const CoreTable: React.FC<{
       },
       {
         accessorKey: 'macAddress',
-        header: 'Description',
+        header: 'MAC Address',
         cell: ({ row }) => (
           <Typography className="capitalize">{row.getValue('macAddress')}</Typography>
         ),
