@@ -1,9 +1,134 @@
-import { connection } from 'next/server.js'
-import DashboardNodeShowcase from './DashboardNodeShowcase.tsx'
+'use client'
 
-const DashboardNodePage: React.FunctionComponent = async () => {
-  await connection()
-  return <DashboardNodeShowcase />
+import { ButtonGroup } from '@/components/ui/button-group.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Typography } from '@/components/ui/typography.tsx'
+import { useErrorState } from '@/stores/error.tsx'
+import { Cvp_DashboardNode_DisplayNodeColdtagAllQuery } from '@/stores/graphql/generated.ts'
+import { useGraphQLClient } from '@/stores/graphql/index.tsx'
+import { PlusIcon } from 'lucide-react'
+import React from 'react'
+import NodeCreateSheet from './NodeCreateSheet.tsx'
+import NodeTable from './NodeTable.tsx'
+import NodeUpdateSheet from './NodeUpdateSheet.tsx'
+
+const DashboardNodePage = () => {
+  const [, { catchError }] = useErrorState()
+  const gqlClient = useGraphQLClient()
+
+  const [state, setState] = React.useState<{
+    loading: boolean
+    items?: Cvp_DashboardNode_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all']
+  }>({
+    loading: true,
+    items: undefined,
+  })
+
+  const [createSheetState, setCreateSheetState] = React.useState<{
+    open: boolean
+  }>({
+    open: false,
+  })
+
+  const [editSheetState, setEditSheetState] = React.useState<{
+    open: boolean
+    value?: Cvp_DashboardNode_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all'][number]
+  }>({
+    open: false,
+  })
+
+  React.useEffect(() => {
+    setState((state) => ({ ...state, loading: true }))
+    ;(async () => {
+      try {
+        const {
+          displayNodeColdtag: { all: items },
+        } = await gqlClient.CVP_DashboardNode_DisplayNodeColdtagAll()
+        setState((state) => ({ ...state, items }))
+      } catch (err) {
+        catchError(err as Error)
+      } finally {
+        setState((state) => ({ ...state, loading: false }))
+      }
+    })()
+  }, [catchError, gqlClient, setState])
+
+  return (
+    <>
+      <div className="flex h-full w-full flex-col items-center">
+        <div className="flex w-0 min-w-6xl shrink flex-col items-center gap-8 py-12">
+          <div className="flex w-full flex-row items-center justify-between">
+            <div className="flex w-full flex-col">
+              <Typography variant="h3" className="text-accent-foreground">
+                Node Device List
+              </Typography>
+              <Typography variant="h4" className="text-muted-foreground">
+                Manage your node devices here.
+              </Typography>
+            </div>
+
+            <div>
+              <ButtonGroup>
+                <Button
+                  variant="default"
+                  className="flex flex-row"
+                  onClick={() => {
+                    setCreateSheetState((state) => ({ ...state, open: true }))
+                  }}
+                >
+                  <PlusIcon />
+                  <Typography>Create Node Device</Typography>
+                </Button>
+              </ButtonGroup>
+            </div>
+          </div>
+
+          <div className="w-full overflow-hidden rounded-md border">
+            <NodeTable
+              items={state.items ?? []}
+              onClickEdit={(value) => {
+                setEditSheetState((state) => ({ ...state, open: true, value }))
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <NodeCreateSheet
+        open={createSheetState.open}
+        onClose={() => {
+          setCreateSheetState((state) => ({ ...state, open: false }))
+        }}
+        onCreate={(value) => {
+          setState((state) => ({
+            ...state,
+            items: state.items ? [...state.items, value] : [value],
+          }))
+          setCreateSheetState((state) => ({ ...state, open: false }))
+        }}
+      />
+
+      <NodeUpdateSheet
+        open={editSheetState.open}
+        value={editSheetState.value}
+        onClose={() => {
+          setEditSheetState((state) => ({ ...state, open: false }))
+        }}
+        onEdit={(value) => {
+          setState((state) => ({
+            ...state,
+            items: state.items?.map((item) => {
+              if (item.id !== value.id) {
+                return item
+              }
+              return value
+            }),
+          }))
+          setEditSheetState((state) => ({ ...state, open: false }))
+        }}
+      />
+    </>
+  )
 }
 
 export default DashboardNodePage

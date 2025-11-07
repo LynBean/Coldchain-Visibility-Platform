@@ -7,3 +7,29 @@ query CVP_DashboardNode_DisplayNodeColdtagAll {
     }
   }
 }
+
+query CVP_DashboardNode_DisplayNodeColdtagById($nodeId: ID!) {
+  displayNodeColdtag {
+    byId(nodeId: $nodeId) {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+mutation CVP_DashboardNode_CreateNodeColdtag($macAddress: String!, $identifier: String) {
+  createNodeColdtag(macAddress: $macAddress, identifier: $identifier) {
+    id
+    macAddress
+    identifier
+  }
+}
+
+mutation CVP_DashboardNode_UpdateNodeColdtag($nodeColdtagId: ID!, $identifier: String) {
+  updateNodeColdtag(nodeColdtagId: $nodeColdtagId, identifier: $identifier) {
+    id
+    macAddress
+    identifier
+  }
+}

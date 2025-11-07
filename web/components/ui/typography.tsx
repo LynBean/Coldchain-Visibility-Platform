@@ -1,51 +1,50 @@
-import tw from '@/lib/tw.ts'
+import { cn } from '@/lib/utils.ts'
 import React from 'react'
-import { twMerge } from 'tailwind-merge'
 
 const variantMap = {
   h1: {
     component: 'h1',
-    className: tw`scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance`,
+    className: cn`scroll-m-20 text-center text-4xl font-extrabold tracking-normal text-balance`,
   },
   h2: {
     component: 'h2',
-    className: tw`scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0`,
+    className: cn`scroll-m-20 pb-2 text-3xl font-bold tracking-normal first:mt-0`,
   },
   h3: {
     component: 'h3',
-    className: tw`scroll-m-20 text-2xl font-semibold tracking-tight`,
+    className: cn`scroll-m-20 text-2xl font-bold tracking-normal`,
   },
   h4: {
     component: 'h4',
-    className: tw`scroll-m-20 text-xl font-semibold tracking-tight`,
+    className: cn`scroll-m-20 text-lg font-normal tracking-normal`,
   },
   p: {
     component: 'p',
-    className: tw`leading-7 not-first:mt-6`,
+    className: cn``,
   },
   blockquote: {
     component: 'blockquote',
-    className: tw`mt-6 border-l-2 pl-6 italic`,
+    className: cn`mt-6 border-l-2 pl-6 italic`,
   },
   'inline-code': {
     component: 'code',
-    className: tw`relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold`,
+    className: cn`relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold`,
   },
   lead: {
     component: 'p',
-    className: tw`text-xl text-muted-foreground`,
+    className: cn`text-xl text-muted-foreground`,
   },
   large: {
     component: 'div',
-    className: tw`text-lg font-semibold`,
+    className: cn`text-lg font-semibold`,
   },
   small: {
     component: 'small',
-    className: tw`text-sm leading-none font-medium`,
+    className: cn`text-sm leading-none font-medium`,
   },
   muted: {
     component: 'p',
-    className: tw`text-sm text-muted-foreground`,
+    className: cn`text-sm text-muted-foreground`,
   },
 } as const
 
@@ -62,7 +61,7 @@ export const Typography = React.forwardRef<HTMLElement, TypographyProps>(
     return (
       <Component
         ref={ref as React.RefObject<HTMLParagraphElement>}
-        className={twMerge(selected.className, className)}
+        className={cn(selected.className, className)}
         {...props}
       >
         {children}

@@ -1,4 +1,43 @@
-query CVP_DashboardNodeInfo_DisplayNodeColdtagById($nodeId: ID!) {
+query CVP_Dashboard_DisplayCoreColdtagAll {
+  displayCoreColdtag {
+    all {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+query CVP_Dashboard_DisplayNodeColdtagAll {
+  displayNodeColdtag {
+    all {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+query CVP_Dashboard_DisplayCoreColdtagById($coreId: ID!) {
+  displayCoreColdtag {
+    byId(coreId: $coreId) {
+      id
+      macAddress
+      identifier
+      telemetryEvents {
+        id
+        coordinate {
+          latitude
+          longitude
+        }
+        eventTime
+        time
+      }
+    }
+  }
+}
+
+query CVP_Dashboard_DisplayNodeColdtagById($nodeId: ID!) {
   displayNodeColdtag {
     byId(nodeId: $nodeId) {
       id

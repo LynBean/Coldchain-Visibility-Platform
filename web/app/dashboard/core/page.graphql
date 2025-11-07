@@ -7,3 +7,29 @@ query CVP_DashboardCore_DisplayCoreColdtagAll {
     }
   }
 }
+
+query CVP_DashboardCore_DisplayCoreColdtagById($coreId: ID!) {
+  displayCoreColdtag {
+    byId(coreId: $coreId) {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+mutation CVP_DashboardCore_CreateCoreColdtag($macAddress: String!, $identifier: String) {
+  createCoreColdtag(macAddress: $macAddress, identifier: $identifier) {
+    id
+    macAddress
+    identifier
+  }
+}
+
+mutation CVP_DashboardCore_UpdateCoreColdtag($coreColdtagId: ID!, $identifier: String) {
+  updateCoreColdtag(coreColdtagId: $coreColdtagId, identifier: $identifier) {
+    id
+    macAddress
+    identifier
+  }
+}

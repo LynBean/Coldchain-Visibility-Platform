@@ -1,33 +1,35 @@
-import tw from '@/lib/tw.ts'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert.tsx'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, LucideIcon } from 'lucide-react'
 import React from 'react'
-import { Alert, AlertDescription, AlertTitle } from './alert.tsx'
 
-const InputAlert: React.FunctionComponent<InputAlertProps> = (props) => {
+const InputAlert: React.FC<{
+  open?: boolean
+  title?: string
+  description?: string
+  icon?: LucideIcon
+}> = ({ open, title, description, icon: Icon = AlertCircleIcon }) => {
   return (
-    <AnimatePresence mode="wait">
-      {(props.title || props.message) && (
+    <AnimatePresence initial={false} mode="wait">
+      {open && (
         <motion.div
-          key={props.toString()}
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -20, opacity: 0 }}
+          key={open.toString()}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
         >
-          <Alert variant="destructive">
-            <AlertCircleIcon className={tw`m-0 h-5`} />
-            <AlertTitle>{props.title}</AlertTitle>
-            <AlertDescription>{props.message}</AlertDescription>
+          <Alert
+            variant="destructive"
+            className="flex flex-row items-center py-2 text-xs [&>svg]:top-auto [&>svg]:left-auto"
+          >
+            {Icon && <Icon size="1.2rem" />}
+            {title && <AlertTitle>{title}</AlertTitle>}
+            {description && <AlertDescription>{description}</AlertDescription>}
           </Alert>
         </motion.div>
       )}
     </AnimatePresence>
   )
-}
-
-type InputAlertProps = {
-  title?: string | React.ReactNode
-  message?: string | React.ReactNode
 }
 
 export default InputAlert

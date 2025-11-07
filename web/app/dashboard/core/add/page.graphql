@@ -1,8 +1,0 @@
-mutation CVP_DashboardCoreAdd_CreateCoreColdtag(
-  $macAddress: String!
-  $identifier: String
-) {
-  createCoreColdtag(macAddress: $macAddress, identifier: $identifier) {
-    id
-  }
-}
