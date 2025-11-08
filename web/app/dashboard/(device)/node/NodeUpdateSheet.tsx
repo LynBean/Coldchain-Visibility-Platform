@@ -1,13 +1,3 @@
-import { Button } from '@/components/ui/button.tsx'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog.tsx'
 import InputAlert from '@/components/ui/input-alert.tsx'
 import { Input } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
@@ -20,6 +10,7 @@ import {
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import React from 'react'
 import { toast } from 'sonner'
+import DeviceUpdateSheetTemplate from '../DeviceUpdateSheetTemplate.tsx'
 
 const NodeUpdateSheet: React.FC<{
   open: boolean
@@ -150,75 +141,47 @@ const NodeUpdateSheet: React.FC<{
   }, [catchError, gqlClient, onClose, onUpdate, state, value])
 
   return (
-    <Dialog
+    <DeviceUpdateSheetTemplate
+      loading={state.loading}
       open={open}
-      onOpenChange={(open) => {
-        if (!open) {
-          onClose()
-        }
-      }}
+      onClose={onClose}
+      title="Update core device"
+      identifier={state.originalValues.identifier ?? undefined}
+      onContinue={onContinue}
     >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update node device</DialogTitle>
-          <DialogDescription>
-            Make changes to {state.originalValues.identifier} here. Click save when
-            you&apos;re done.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid flex-1 auto-rows-min gap-6 px-4 py-8">
-          {(
-            [
-              {
-                label: 'Name',
-                value: state.formValues.identifier,
-                onChange: (value) => {
-                  setFormValues('identifier', value)
-                },
-                error: state.formErrors.identifier,
-              },
-            ] as {
-              label: string
-              value: string | undefined
-              type: React.HTMLInputTypeAttribute
-              onChange: (value: string) => void
-              error: string | undefined
-            }[]
-          ).map(({ label, value, type = 'text', onChange, error }, index) => (
-            <div key={index} className="grid gap-3">
-              <Label htmlFor={label}>{label}</Label>
-              <Input
-                id={label}
-                disabled={state.loading}
-                value={value}
-                type={type}
-                onChange={(event) => {
-                  onChange(event.currentTarget.value)
-                }}
-              />
-              <InputAlert open={error != null} title={error} />
-            </div>
-          ))}
-        </div>
-        <DialogFooter>
-          <Button
-            type="submit"
+      {(
+        [
+          {
+            label: 'Name',
+            value: state.formValues.identifier,
+            onChange: (value) => {
+              setFormValues('identifier', value)
+            },
+            error: state.formErrors.identifier,
+          },
+        ] as {
+          label: string
+          value: string | undefined
+          type: React.HTMLInputTypeAttribute
+          onChange: (value: string) => void
+          error: string | undefined
+        }[]
+      ).map(({ label, value, type = 'text', onChange, error }, index) => (
+        <div key={index} className="grid gap-3">
+          <Label htmlFor={label}>{label}</Label>
+          <Input
+            id={label}
             disabled={state.loading}
-            onClick={() => {
-              toast.promise(onContinue(), {
-                loading: 'Updating...',
-                success: 'Node device has been updated.',
-              })
+            value={value}
+            type={type}
+            onChange={(event) => {
+              onChange(event.currentTarget.value)
             }}
-          >
-            Save changes
-          </Button>
-          <DialogClose asChild>
-            <Button variant="outline">Close</Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          />
+          <InputAlert open={error != null} title={error} />
+        </div>
+      ))}
+    </DeviceUpdateSheetTemplate>
   )
 }
 

@@ -1,10 +1,3 @@
-import { Button } from '@/components/ui/button.tsx'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu.tsx'
 import {
   Table,
   TableBody,
@@ -13,9 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table.tsx'
-import { Typography } from '@/components/ui/typography.tsx'
-import { Cvp_DashboardNode_DisplayNodeColdtagAllQuery } from '@/stores/graphql/generated.ts'
 import {
+  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -26,15 +18,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { MoreHorizontal } from 'lucide-react'
 import React from 'react'
 
-const NodeTable: React.FC<{
-  items: Cvp_DashboardNode_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all']
-  onClickEdit?: (
-    value: Cvp_DashboardNode_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all'][number]
-  ) => void
-}> = ({ items, onClickEdit }) => {
+type DeviceTableTemplateProps<T> = {
+  items: T[]
+  columns: ColumnDef<T>[]
+}
+
+const DeviceTableTemplate = <T,>({ items, columns }: DeviceTableTemplateProps<T>) => {
   const [tableSortingState, setTableSortingState] = React.useState<SortingState>([])
   const [tableColumnFiltersState, setTableColumnFiltersState] =
     React.useState<ColumnFiltersState>([])
@@ -45,47 +36,7 @@ const NodeTable: React.FC<{
 
   const table = useReactTable({
     data: items,
-    columns: [
-      {
-        accessorKey: 'identifier',
-        header: 'Name',
-        cell: ({ row }) => (
-          <Typography className="capitalize">{row.getValue('identifier')}</Typography>
-        ),
-      },
-      {
-        accessorKey: 'macAddress',
-        header: 'MAC Address',
-        cell: ({ row }) => (
-          <Typography className="capitalize">{row.getValue('macAddress')}</Typography>
-        ),
-      },
-      {
-        id: 'actions',
-        enableHiding: false,
-        cell: ({ row }) => {
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => {
-                    onClickEdit?.(row.original)
-                  }}
-                >
-                  Edit
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )
-        },
-      },
-    ],
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -142,4 +93,4 @@ const NodeTable: React.FC<{
   )
 }
 
-export default NodeTable
+export default DeviceTableTemplate

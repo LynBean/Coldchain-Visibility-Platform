@@ -107,7 +107,7 @@ const DashboardSidebarContent: React.FC = () => {
                     }}
                   >
                     <a href="/dashboard/core">
-                      <span>Core processor</span>
+                      <span>Core device</span>
                     </a>
                   </SidebarMenuSubButton>
                   {/** Node */}
@@ -120,7 +120,7 @@ const DashboardSidebarContent: React.FC = () => {
                     }}
                   >
                     <a href="/dashboard/node">
-                      <span>Node processor</span>
+                      <span>Node device</span>
                     </a>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
