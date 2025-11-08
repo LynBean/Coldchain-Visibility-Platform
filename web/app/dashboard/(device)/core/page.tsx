@@ -2,10 +2,19 @@
 
 import { ButtonGroup } from '@/components/ui/button-group.tsx'
 import { Button } from '@/components/ui/button.tsx'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty.tsx'
+import { Spinner } from '@/components/ui/spinner.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import { useErrorState } from '@/stores/error.tsx'
 import { Cvp_DashboardCore_DisplayCoreColdtagAllQuery } from '@/stores/graphql/generated.ts'
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
+import { AnimatePresence, motion } from 'framer-motion'
 import { PlusIcon } from 'lucide-react'
 import React from 'react'
 import CoreCreateSheet from './CoreCreateSheet.tsx'
@@ -55,44 +64,71 @@ const DashboardCorePage = () => {
 
   return (
     <>
-      <div className="flex h-full w-full flex-col items-center">
-        <div className="flex w-0 min-w-6xl shrink flex-col items-center gap-8 py-12">
-          <div className="flex w-full flex-row items-center justify-between">
-            <div className="flex w-full flex-col">
-              <Typography variant="h3" className="text-accent-foreground">
-                Core Device List
-              </Typography>
-              <Typography variant="h4" className="text-muted-foreground">
-                Manage your core devices here.
-              </Typography>
+      <AnimatePresence mode="wait">
+        <div className="flex h-full w-full flex-col items-center">
+          <div className="flex w-0 min-w-6xl shrink flex-col items-center gap-8 py-12">
+            <div className="flex w-full flex-row items-center justify-between">
+              <div className="flex w-full flex-col">
+                <Typography variant="h3" className="text-accent-foreground">
+                  Core Device List
+                </Typography>
+                <Typography variant="h4" className="text-muted-foreground">
+                  Manage your core devices here.
+                </Typography>
+              </div>
+
+              <div>
+                <ButtonGroup>
+                  <Button
+                    variant="default"
+                    className="flex flex-row"
+                    onClick={() => {
+                      setCreateSheetState((state) => ({ ...state, open: true }))
+                    }}
+                  >
+                    <PlusIcon />
+                    <Typography>Create Core Device</Typography>
+                  </Button>
+                </ButtonGroup>
+              </div>
             </div>
 
-            <div>
-              <ButtonGroup>
-                <Button
-                  variant="default"
-                  className="flex flex-row"
-                  onClick={() => {
-                    setCreateSheetState((state) => ({ ...state, open: true }))
+            {state.loading ? (
+              <motion.div
+                key="device-loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Empty className="w-full">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Spinner />
+                    </EmptyMedia>
+                    <EmptyTitle>Loading devices</EmptyTitle>
+                    <EmptyDescription>Just a moment.</EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="device-table"
+                className="w-full overflow-hidden rounded-md border"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <CoreTable
+                  items={state.items ?? []}
+                  onClickEdit={(value) => {
+                    setEditSheetState((state) => ({ ...state, open: true, value }))
                   }}
-                >
-                  <PlusIcon />
-                  <Typography>Create Core Device</Typography>
-                </Button>
-              </ButtonGroup>
-            </div>
-          </div>
-
-          <div className="w-full overflow-hidden rounded-md border">
-            <CoreTable
-              items={state.items ?? []}
-              onClickEdit={(value) => {
-                setEditSheetState((state) => ({ ...state, open: true, value }))
-              }}
-            />
+                />
+              </motion.div>
+            )}
           </div>
         </div>
-      </div>
+      </AnimatePresence>
 
       <CoreCreateSheet
         open={createSheetState.open}
