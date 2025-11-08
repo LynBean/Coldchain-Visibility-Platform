@@ -224,6 +224,31 @@ const DashboardChartsPage = () => {
 
           switch (state.current?.__typename) {
             case 'CoreColdtag': {
+              const totalEvents = [...state.current.telemetryEvents]
+              if (totalEvents.length <= 0) {
+                return (
+                  <motion.div
+                    key="chart-corecoldtag-empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <Empty>
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <Braces />
+                        </EmptyMedia>
+                        <EmptyTitle>No Data Available</EmptyTitle>
+                        <EmptyDescription>
+                          This chart has no data to display. Try selecting a different
+                          device.
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
+                  </motion.div>
+                )
+              }
+
               return (
                 <motion.div
                   key="chart-corecoldtag"
@@ -246,7 +271,7 @@ const DashboardChartsPage = () => {
               if (totalEvents.length <= 0) {
                 return (
                   <motion.div
-                    key="empty-data"
+                    key="chart-nodecoldtag-empty"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
