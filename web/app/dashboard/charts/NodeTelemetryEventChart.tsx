@@ -1,6 +1,5 @@
 'use client'
 
-import { capitalize } from '@/common/string.ts'
 import { Button } from '@/components/ui/button.tsx'
 import {
   Card,
@@ -15,32 +14,23 @@ import {
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
+  ChartTooltipContent,
 } from '@/components/ui/chart.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
-import { Cvp_Dashboard_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
-import { ExternalLink } from 'lucide-react'
+import { Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
+import { Droplets, ExternalLink, Thermometer } from 'lucide-react'
 import React from 'react'
-import RechartsPrimitive, {
-  CartesianGrid,
-  Scatter,
-  ScatterChart,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import EventDialog from './EventDialog.tsx'
 
-const NodeAlertEventChart: React.FunctionComponent<{
-  events: (
-    | Cvp_Dashboard_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertLiquidEvents'][number]
-    | Cvp_Dashboard_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertImpactEvents'][number]
-  )[]
+const NodeTelemetryEventChart: React.FunctionComponent<{
+  events: Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['telemetryEvents']
 }> = ({ events }) => {
   type Payload = {
-    date: number
-    type: 'liquid' | 'impact'
-    liquid?: number
-    impact?: number
+    date: string
+    temperature?: number
+    humidity?: number
     latitude?: number
     longitude?: number
     coreColdtagId: string
@@ -63,36 +53,18 @@ const NodeAlertEventChart: React.FunctionComponent<{
     setState((state) => ({
       ...state,
       payload: events
-        .toSorted(
-          (a, b) => new Date(a.eventTime).getTime() - new Date(b.eventTime).getTime()
+        .map(
+          (event) =>
+            ({
+              date: event.eventTime,
+              temperature: event.temperature,
+              humidity: event.humidity,
+              latitude: event.coordinate?.latitude,
+              longitude: event.coordinate?.longitude,
+              coreColdtagId: event.coreColdtag.id,
+            }) as Payload
         )
-        .map((event, index, arr) => {
-          const currentTime = new Date(event.eventTime).getTime()
-          const prevTime = index > 0 ? new Date(arr[index - 1].eventTime).getTime() : 0
-          const timeDiff = index > 0 ? Math.abs(currentTime - prevTime) : 0
-          const variance = Math.min(1, 100000 / (timeDiff + 1)) // closer times → higher variance
-          const randomOffset = (Math.random() - 0.5) * variance
-
-          const baseValue = 1.5 + randomOffset
-          const clampedValue = Math.min(2, Math.max(1, baseValue))
-
-          return {
-            date: currentTime,
-            type:
-              event.__typename === 'NodeColdtagEventAlertLiquid' ? 'liquid' : 'impact',
-            liquid:
-              event.__typename === 'NodeColdtagEventAlertLiquid'
-                ? clampedValue
-                : undefined,
-            impact:
-              event.__typename === 'NodeColdtagEventAlertImpact'
-                ? clampedValue
-                : undefined,
-            latitude: event.coordinate?.latitude,
-            longitude: event.coordinate?.longitude,
-            coreColdtagId: event.coreColdtag.id,
-          } as Payload
-        }),
+        .toSorted((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     }))
   }, [events])
 
@@ -101,27 +73,27 @@ const NodeAlertEventChart: React.FunctionComponent<{
       <Card className="pt-0">
         <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
           <div className="grid flex-1 gap-1">
-            <CardTitle>Alerts</CardTitle>
-            <CardDescription>Showing alert records of all time</CardDescription>
+            <CardTitle>Telemetry</CardTitle>
+            <CardDescription>Showing telemetry records of all time</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <ChartContainer
             config={
               {
-                liquid: {
-                  label: 'Liquid Alert',
-                  color: 'var(--chart-3)',
+                temperature: {
+                  label: 'Temperature',
+                  color: 'var(--chart-1)',
                 },
-                impact: {
-                  label: 'Impact Alert',
-                  color: 'var(--chart-4)',
+                humidity: {
+                  label: 'Humidity',
+                  color: 'var(--chart-2)',
                 },
               } satisfies ChartConfig
             }
             className="aspect-auto h-[250px] w-full"
           >
-            <ScatterChart
+            <AreaChart
               data={state.payload}
               onClick={(chartState) => {
                 if (
@@ -137,85 +109,88 @@ const NodeAlertEventChart: React.FunctionComponent<{
                 }
               }}
             >
-              <CartesianGrid syncWithTicks />
+              <defs>
+                <linearGradient id="fillTemperature" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-temperature)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-temperature)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+                <linearGradient id="fillHumidity" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-humidity)" stopOpacity={0.8} />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-humidity)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
-                type="number"
-                domain={['auto', 'auto']}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={32}
                 tickFormatter={(value) => {
-                  return new Date(value).toLocaleDateString('en-US', {
+                  const date = new Date(value)
+                  return date.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
                   })
                 }}
               />
-              <YAxis type="number" domain={[0, 3]} hide />
               <ChartTooltip
                 cursor={false}
                 content={
-                  (({ payload }, ref) => {
-                    return (
-                      <div
-                        ref={ref}
-                        className={tw`grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl`}
-                      >
-                        {payload && payload.length && (
-                          <>
-                            <div className={tw`font-medium`}>
-                              {new Date(payload[0].value as number).toLocaleDateString(
-                                'en-US',
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  second: '2-digit',
-                                }
-                              )}
-                            </div>
-
-                            <div
-                              className={tw`flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground`}
-                            >
-                              <div
-                                className={tw`flex flex-1 justify-between gap-1.5 leading-none`}
-                              >
-                                <div className={tw`grid gap-1.5`}>
-                                  <span className={tw`text-muted-foreground`}>
-                                    {capitalize(payload[0].payload.type)} alert
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )
-                  }) as React.FunctionComponent<
-                    React.ComponentProps<typeof RechartsPrimitive.Tooltip>
-                  >
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })
+                    }}
+                    indicator="dot"
+                  />
                 }
               />
-              <Scatter dataKey="liquid" fill="var(--color-liquid)" shape="circle" />
-              <Scatter dataKey="impact" fill="var(--color-impact)" shape="triangle" />
+              <Area
+                dataKey="temperature"
+                type="bump"
+                fill="url(#fillTemperature)"
+                stroke="var(--color-temperature)"
+                stackId="a"
+              />
+              <Area
+                dataKey="humidity"
+                type="bump"
+                fill="url(#fillHumidity)"
+                stroke="var(--color-humidity)"
+                stackId="a"
+              />
               <ChartLegend content={<ChartLegendContent />} />
-            </ScatterChart>
+            </AreaChart>
           </ChartContainer>
         </CardContent>
       </Card>
 
       {dialogState.current && (
         <EventDialog
-          title={`${capitalize(dialogState.current.type)} alert`}
+          title="Telemetry Event"
           description={
             <div className={tw`flex flex-row items-center gap-2`}>
               <span>Recorded at</span>
-              <Typography variant="inline-code" className={tw`text-gray-600`}>
+              <Typography variant="inline-code">
                 {new Date(dialogState.current.date).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'short',
@@ -232,6 +207,34 @@ const NodeAlertEventChart: React.FunctionComponent<{
             setDialogState((state) => ({ ...state, open: false }))
           }}
         >
+          <div className={tw`flex flex-col flex-wrap gap-2 py-4`}>
+            {(
+              [
+                {
+                  icon: <Thermometer className={tw`text-red-500`} />,
+                  content: `${dialogState.current.temperature?.toLocaleString()} °C`,
+                },
+                {
+                  icon: <Droplets className={tw`text-blue-500`} />,
+                  content: dialogState.current.humidity?.toLocaleString(),
+                },
+              ] as {
+                icon: React.ReactNode
+                content: string | undefined
+              }[]
+            ).map(({ icon, content }, index) => (
+              <div key={index} className={tw`flex items-center justify-start`}>
+                <div className={tw`flex flex-row items-center gap-1`}>
+                  {icon}
+
+                  <Typography variant="inline-code" className={tw`text-sm`}>
+                    {content}
+                  </Typography>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className={tw`flex flex-col items-end gap-2`}>
             {(
               [
@@ -290,4 +293,4 @@ const NodeAlertEventChart: React.FunctionComponent<{
   )
 }
 
-export default NodeAlertEventChart
+export default NodeTelemetryEventChart

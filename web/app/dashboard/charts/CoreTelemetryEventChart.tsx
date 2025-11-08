@@ -8,32 +8,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card.tsx'
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart.tsx'
+import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
-import { Cvp_Dashboard_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
-import { Droplets, ExternalLink, Thermometer } from 'lucide-react'
+import { Cvp_DashboardCharts_DisplayCoreColdtagByIdQuery } from '@/stores/graphql/generated.ts'
+import { ExternalLink } from 'lucide-react'
 import React from 'react'
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
+import RechartsPrimitive, { CartesianGrid, Scatter, ScatterChart, XAxis } from 'recharts'
 import EventDialog from './EventDialog.tsx'
 
-const NodeTelemetryEventChart: React.FunctionComponent<{
-  events: Cvp_Dashboard_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['telemetryEvents']
+const CoreTelemetryEventChart: React.FunctionComponent<{
+  events: Cvp_DashboardCharts_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']['telemetryEvents']
 }> = ({ events }) => {
   type Payload = {
     date: string
-    temperature?: number
-    humidity?: number
     latitude?: number
     longitude?: number
-    coreColdtagId: string
+    y: number
   }
 
   const [state, setState] = React.useState<{
@@ -53,18 +44,26 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
     setState((state) => ({
       ...state,
       payload: events
-        .map(
-          (event) =>
-            ({
-              date: event.eventTime,
-              temperature: event.temperature,
-              humidity: event.humidity,
-              latitude: event.coordinate?.latitude,
-              longitude: event.coordinate?.longitude,
-              coreColdtagId: event.coreColdtag.id,
-            }) as Payload
+        .toSorted(
+          (a, b) => new Date(a.eventTime).getTime() - new Date(b.eventTime).getTime()
         )
-        .toSorted((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+        .map((event, index, arr) => {
+          const currentTime = new Date(event.eventTime).getTime()
+          const prevTime = index > 0 ? new Date(arr[index - 1].eventTime).getTime() : 0
+          const timeDiff = index > 0 ? Math.abs(currentTime - prevTime) : 0
+          const variance = Math.min(1, 100000 / (timeDiff + 1)) // closer times → higher variance
+          const randomOffset = (Math.random() - 0.5) * variance
+
+          const baseValue = 1.5 + randomOffset
+          const clampedValue = Math.min(2, Math.max(1, baseValue))
+
+          return {
+            date: event.eventTime,
+            latitude: event.coordinate?.latitude,
+            longitude: event.coordinate?.longitude,
+            y: clampedValue,
+          } as Payload
+        }),
     }))
   }, [events])
 
@@ -80,20 +79,11 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <ChartContainer
             config={
-              {
-                temperature: {
-                  label: 'Temperature',
-                  color: 'var(--chart-1)',
-                },
-                humidity: {
-                  label: 'Humidity',
-                  color: 'var(--chart-2)',
-                },
-              } satisfies ChartConfig
+              { date: { label: 'Date', color: 'var(--chart-2)' } } satisfies ChartConfig
             }
             className="aspect-auto h-[250px] w-full"
           >
-            <AreaChart
+            <ScatterChart
               data={state.payload}
               onClick={(chartState) => {
                 if (
@@ -109,28 +99,6 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
                 }
               }}
             >
-              <defs>
-                <linearGradient id="fillTemperature" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-temperature)"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-temperature)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-                <linearGradient id="fillHumidity" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-humidity)" stopOpacity={0.8} />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-humidity)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -150,36 +118,37 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
               <ChartTooltip
                 cursor={false}
                 content={
-                  <ChartTooltipContent
-                    labelFormatter={(value) => {
-                      return new Date(value).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                      })
-                    }}
-                    indicator="dot"
-                  />
+                  (({ payload }, ref) => {
+                    return (
+                      <div
+                        ref={ref}
+                        className={tw`grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl`}
+                      >
+                        {payload && payload.length && (
+                          <>
+                            <div className={tw`font-medium`}>
+                              {new Date(payload[0].value as number).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit',
+                                }
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  }) as React.FunctionComponent<
+                    React.ComponentProps<typeof RechartsPrimitive.Tooltip>
+                  >
                 }
               />
-              <Area
-                dataKey="temperature"
-                type="bump"
-                fill="url(#fillTemperature)"
-                stroke="var(--color-temperature)"
-                stackId="a"
-              />
-              <Area
-                dataKey="humidity"
-                type="bump"
-                fill="url(#fillHumidity)"
-                stroke="var(--color-humidity)"
-                stackId="a"
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-            </AreaChart>
+              <Scatter dataKey="y" fill="var(--color-date)" shape="circle" />
+            </ScatterChart>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -190,7 +159,7 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
           description={
             <div className={tw`flex flex-row items-center gap-2`}>
               <span>Recorded at</span>
-              <Typography variant="inline-code" className={tw`text-gray-600`}>
+              <Typography variant="inline-code">
                 {new Date(dialogState.current.date).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'short',
@@ -207,47 +176,9 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
             setDialogState((state) => ({ ...state, open: false }))
           }}
         >
-          <div className={tw`flex flex-col flex-wrap gap-2 py-4`}>
-            {(
-              [
-                {
-                  icon: <Thermometer className={tw`text-red-500`} />,
-                  content: `${dialogState.current.temperature?.toLocaleString()} °C`,
-                },
-                {
-                  icon: <Droplets className={tw`text-blue-500`} />,
-                  content: dialogState.current.humidity?.toLocaleString(),
-                },
-              ] as {
-                icon: React.ReactNode
-                content: string | undefined
-              }[]
-            ).map(({ icon, content }, index) => (
-              <div key={index} className={tw`flex items-center justify-start`}>
-                <div className={tw`flex flex-row items-center gap-1`}>
-                  {icon}
-
-                  <Typography variant="inline-code" className={tw`text-sm`}>
-                    {content}
-                  </Typography>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <div className={tw`flex flex-col items-end gap-2`}>
             {(
               [
-                {
-                  title: 'Core Info',
-                  onClick: () => {
-                    window.open(
-                      `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard/core/${dialogState.current?.coreColdtagId}/info`,
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
-                  },
-                },
                 {
                   title:
                     dialogState.current.latitude != null &&
@@ -293,4 +224,4 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
   )
 }
 
-export default NodeTelemetryEventChart
+export default CoreTelemetryEventChart

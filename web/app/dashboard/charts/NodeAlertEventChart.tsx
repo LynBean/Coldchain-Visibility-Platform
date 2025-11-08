@@ -1,5 +1,6 @@
 'use client'
 
+import { capitalize } from '@/common/string.ts'
 import { Button } from '@/components/ui/button.tsx'
 import {
   Card,
@@ -8,23 +9,41 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card.tsx'
-import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart.tsx'
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+} from '@/components/ui/chart.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
-import { Cvp_Dashboard_DisplayCoreColdtagByIdQuery } from '@/stores/graphql/generated.ts'
+import { Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
 import { ExternalLink } from 'lucide-react'
 import React from 'react'
-import RechartsPrimitive, { CartesianGrid, Scatter, ScatterChart, XAxis } from 'recharts'
+import RechartsPrimitive, {
+  CartesianGrid,
+  Scatter,
+  ScatterChart,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import EventDialog from './EventDialog.tsx'
 
-const CoreTelemetryEventChart: React.FunctionComponent<{
-  events: Cvp_Dashboard_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']['telemetryEvents']
+const NodeAlertEventChart: React.FunctionComponent<{
+  events: (
+    | Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertLiquidEvents'][number]
+    | Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertImpactEvents'][number]
+  )[]
 }> = ({ events }) => {
   type Payload = {
-    date: string
+    date: number
+    type: 'liquid' | 'impact'
+    liquid?: number
+    impact?: number
     latitude?: number
     longitude?: number
-    y: number
+    coreColdtagId: string
   }
 
   const [state, setState] = React.useState<{
@@ -58,10 +77,20 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
           const clampedValue = Math.min(2, Math.max(1, baseValue))
 
           return {
-            date: event.eventTime,
+            date: currentTime,
+            type:
+              event.__typename === 'NodeColdtagEventAlertLiquid' ? 'liquid' : 'impact',
+            liquid:
+              event.__typename === 'NodeColdtagEventAlertLiquid'
+                ? clampedValue
+                : undefined,
+            impact:
+              event.__typename === 'NodeColdtagEventAlertImpact'
+                ? clampedValue
+                : undefined,
             latitude: event.coordinate?.latitude,
             longitude: event.coordinate?.longitude,
-            y: clampedValue,
+            coreColdtagId: event.coreColdtag.id,
           } as Payload
         }),
     }))
@@ -72,14 +101,23 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
       <Card className="pt-0">
         <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
           <div className="grid flex-1 gap-1">
-            <CardTitle>Telemetry</CardTitle>
-            <CardDescription>Showing telemetry records of all time</CardDescription>
+            <CardTitle>Alerts</CardTitle>
+            <CardDescription>Showing alert records of all time</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <ChartContainer
             config={
-              { date: { label: 'Date', color: 'var(--chart-2)' } } satisfies ChartConfig
+              {
+                liquid: {
+                  label: 'Liquid Alert',
+                  color: 'var(--chart-3)',
+                },
+                impact: {
+                  label: 'Impact Alert',
+                  color: 'var(--chart-4)',
+                },
+              } satisfies ChartConfig
             }
             className="aspect-auto h-[250px] w-full"
           >
@@ -99,22 +137,24 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
                 }
               }}
             >
-              <CartesianGrid vertical={false} />
+              <CartesianGrid syncWithTicks />
               <XAxis
                 dataKey="date"
+                type="number"
+                domain={['auto', 'auto']}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={32}
                 tickFormatter={(value) => {
-                  const date = new Date(value)
-                  return date.toLocaleDateString('en-US', {
+                  return new Date(value).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
                   })
                 }}
               />
+              <YAxis type="number" domain={[0, 3]} hide />
               <ChartTooltip
                 cursor={false}
                 content={
@@ -138,6 +178,20 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
                                 }
                               )}
                             </div>
+
+                            <div
+                              className={tw`flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground`}
+                            >
+                              <div
+                                className={tw`flex flex-1 justify-between gap-1.5 leading-none`}
+                              >
+                                <div className={tw`grid gap-1.5`}>
+                                  <span className={tw`text-muted-foreground`}>
+                                    {capitalize(payload[0].payload.type)} alert
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </>
                         )}
                       </div>
@@ -147,7 +201,9 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
                   >
                 }
               />
-              <Scatter dataKey="y" fill="var(--color-date)" shape="circle" />
+              <Scatter dataKey="liquid" fill="var(--color-liquid)" shape="circle" />
+              <Scatter dataKey="impact" fill="var(--color-impact)" shape="triangle" />
+              <ChartLegend content={<ChartLegendContent />} />
             </ScatterChart>
           </ChartContainer>
         </CardContent>
@@ -155,11 +211,11 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
 
       {dialogState.current && (
         <EventDialog
-          title="Telemetry Event"
+          title={`${capitalize(dialogState.current.type)} alert`}
           description={
             <div className={tw`flex flex-row items-center gap-2`}>
               <span>Recorded at</span>
-              <Typography variant="inline-code" className={tw`text-gray-600`}>
+              <Typography variant="inline-code">
                 {new Date(dialogState.current.date).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'short',
@@ -179,6 +235,16 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
           <div className={tw`flex flex-col items-end gap-2`}>
             {(
               [
+                {
+                  title: 'Core Info',
+                  onClick: () => {
+                    window.open(
+                      `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard/core/${dialogState.current?.coreColdtagId}/info`,
+                      '_blank',
+                      'noopener,noreferrer'
+                    )
+                  },
+                },
                 {
                   title:
                     dialogState.current.latitude != null &&
@@ -224,4 +290,4 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
   )
 }
 
-export default CoreTelemetryEventChart
+export default NodeAlertEventChart

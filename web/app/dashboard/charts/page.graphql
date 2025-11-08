@@ -1,4 +1,4 @@
-query CVP_Dashboard_DisplayCoreColdtagAll {
+query CVP_DashboardCharts_DisplayCoreColdtagAll {
   displayCoreColdtag {
     all {
       id
@@ -8,7 +8,7 @@ query CVP_Dashboard_DisplayCoreColdtagAll {
   }
 }
 
-query CVP_Dashboard_DisplayNodeColdtagAll {
+query CVP_DashboardCharts_DisplayNodeColdtagAll {
   displayNodeColdtag {
     all {
       id
@@ -18,7 +18,7 @@ query CVP_Dashboard_DisplayNodeColdtagAll {
   }
 }
 
-query CVP_Dashboard_DisplayCoreColdtagById($coreId: ID!) {
+query CVP_DashboardCharts_DisplayCoreColdtagById($coreId: ID!) {
   displayCoreColdtag {
     byId(coreId: $coreId) {
       id
@@ -37,7 +37,7 @@ query CVP_Dashboard_DisplayCoreColdtagById($coreId: ID!) {
   }
 }
 
-query CVP_Dashboard_DisplayNodeColdtagById($nodeId: ID!) {
+query CVP_DashboardCharts_DisplayNodeColdtagById($nodeId: ID!) {
   displayNodeColdtag {
     byId(nodeId: $nodeId) {
       id

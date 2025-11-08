@@ -28,12 +28,13 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar.tsx'
 import {
+  ChartSpline,
   ChevronRight,
   Cpu,
   GalleryVerticalEnd,
   Moon,
-  SquareTerminal,
   Sun,
+  Target,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation.js'
@@ -67,7 +68,7 @@ const DashboardSidebarContent: React.FC = () => {
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {/** Dashboard */}
+        {/** Overview */}
         <SidebarMenuItem>
           <SidebarMenuButton
             tooltip="dashboard"
@@ -77,9 +78,26 @@ const DashboardSidebarContent: React.FC = () => {
               router.replace('/dashboard')
             }}
           >
-            <SquareTerminal />
+            <Target />
             <a href="/dashboard">
-              <span>Dashboard</span>
+              <span>Overview</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+
+        {/** Charts */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            tooltip="charts"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              router.replace('/dashboard/charts')
+            }}
+          >
+            <ChartSpline />
+            <a href="/dashboard/charts">
+              <span>Charts</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
