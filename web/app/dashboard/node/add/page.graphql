@@ -1,8 +1,0 @@
-mutation CVP_DashboardNodeAdd_CreateNodeColdtag(
-  $macAddress: String!
-  $identifier: String
-) {
-  createNodeColdtag(macAddress: $macAddress, identifier: $identifier) {
-    id
-  }
-}

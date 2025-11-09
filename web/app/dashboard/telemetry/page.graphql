@@ -1,0 +1,105 @@
+query CVP_DashboardTelemetry_DisplayCoreColdtagAll {
+  displayCoreColdtag {
+    all {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+query CVP_DashboardTelemetry_DisplayNodeColdtagAll {
+  displayNodeColdtag {
+    all {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+query CVP_DashboardTelemetry_DisplayCoreColdtagById($coreId: ID!) {
+  displayCoreColdtag {
+    byId(coreId: $coreId) {
+      id
+      macAddress
+      identifier
+      telemetryEvents {
+        id
+        coordinate {
+          latitude
+          longitude
+        }
+        eventTime
+        time
+      }
+    }
+  }
+}
+
+query CVP_DashboardTelemetry_DisplayCoreColdtagByIdBasics($coreId: ID!) {
+  displayCoreColdtag {
+    byId(coreId: $coreId) {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+query CVP_DashboardTelemetry_DisplayNodeColdtagById($nodeId: ID!) {
+  displayNodeColdtag {
+    byId(nodeId: $nodeId) {
+      id
+      macAddress
+      identifier
+      telemetryEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        temperature
+        humidity
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertLiquidEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertImpactEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+    }
+  }
+}

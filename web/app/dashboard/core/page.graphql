@@ -1,9 +1,0 @@
-query CVP_DashboardCore_DisplayCoreColdtagAll {
-  displayCoreColdtag {
-    all {
-      id
-      macAddress
-      identifier
-    }
-  }
-}

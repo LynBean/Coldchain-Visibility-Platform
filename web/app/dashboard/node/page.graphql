@@ -1,9 +1,0 @@
-query CVP_DashboardNode_DisplayNodeColdtagAll {
-  displayNodeColdtag {
-    all {
-      id
-      macAddress
-      identifier
-    }
-  }
-}

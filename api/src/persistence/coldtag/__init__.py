@@ -405,7 +405,7 @@ class ColdtagPersistence(BasePersistence):
                 sql.query(
                     """
                     INSERT INTO update_core_coldtag (
-                        core_id,
+                        core_coldtag_id,
                         $COLUMNS
                     ) VALUES (
                         $1,
@@ -486,7 +486,7 @@ class ColdtagPersistence(BasePersistence):
                 sql.query(
                     """
                     INSERT INTO update_node_coldtag (
-                        node_id,
+                        node_coldtag_id,
                         $COLUMNS
                     ) VALUES (
                         $1,

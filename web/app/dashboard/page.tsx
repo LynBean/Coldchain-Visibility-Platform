@@ -1,16 +1,21 @@
-'use client'
-
-import { useRouter } from 'next/navigation.js'
-import React from 'react'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty.tsx'
 
 const DashboardPage = () => {
-  const router = useRouter()
-
-  React.useEffect(() => {
-    router.replace('/dashboard/core')
-  }, [router])
-
-  return undefined
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>404 - Undergoing Construction</EmptyTitle>
+        <EmptyDescription>
+          The page you&apos;re looking for is undergoing construction.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
 }
 
 export default DashboardPage

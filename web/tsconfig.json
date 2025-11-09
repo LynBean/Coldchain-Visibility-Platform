@@ -22,8 +22,16 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "es5"
+    "target": "esnext",
+    "types": ["next", "next/types/global"]
   },
   "exclude": ["**/node_modules"],
-  "include": [".next/types/**/*.ts", "**/*.css", "**/*.js", "**/*.ts", "**/*.tsx"]
+  "include": [
+    ".next/types/**/*.ts",
+    "**/*.css",
+    "**/*.js",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/dev/types/**/*.ts"
+  ]
 }
