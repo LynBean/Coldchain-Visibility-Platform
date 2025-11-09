@@ -26,6 +26,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar.tsx'
 import {
   ChartSpline,
@@ -63,10 +64,11 @@ const DashboardSidebarHeader: React.FC = () => {
 
 const DashboardSidebarContent: React.FC = () => {
   const router = useRouter()
+  const { setOpenMobile } = useSidebar()
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Admin</SidebarGroupLabel>
       <SidebarMenu>
         {/** Overview */}
         <SidebarMenuItem>
@@ -76,6 +78,7 @@ const DashboardSidebarContent: React.FC = () => {
               event.preventDefault()
               event.stopPropagation()
               router.replace('/dashboard')
+              setOpenMobile(false)
             }}
           >
             <Target />
@@ -88,16 +91,17 @@ const DashboardSidebarContent: React.FC = () => {
         {/** Charts */}
         <SidebarMenuItem>
           <SidebarMenuButton
-            tooltip="charts"
+            tooltip="telemetry"
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              router.replace('/dashboard/charts')
+              router.replace('/dashboard/telemetry')
+              setOpenMobile(false)
             }}
           >
             <ChartSpline />
-            <a href="/dashboard/charts">
-              <span>Charts</span>
+            <a href="/dashboard/telemetry">
+              <span>Telemetry</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -122,6 +126,7 @@ const DashboardSidebarContent: React.FC = () => {
                       event.preventDefault()
                       event.stopPropagation()
                       router.replace('/dashboard/core')
+                      setOpenMobile(false)
                     }}
                   >
                     <a href="/dashboard/core">
@@ -135,6 +140,7 @@ const DashboardSidebarContent: React.FC = () => {
                       event.preventDefault()
                       event.stopPropagation()
                       router.replace('/dashboard/node')
+                      setOpenMobile(false)
                     }}
                   >
                     <a href="/dashboard/node">
@@ -197,7 +203,8 @@ const DashboardSidebar: React.FC<React.PropsWithChildren> = ({ children }) => {
             </DropdownMenu>
           </div>
         </header>
-        {children}
+
+        <main>{children}</main>
       </SidebarInset>
     </>
   )

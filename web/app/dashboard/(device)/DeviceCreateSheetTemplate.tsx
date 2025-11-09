@@ -37,7 +37,7 @@ const DeviceCreateSheetTemplate: React.FC<
           </SheetDescription>
         </SheetHeader>
         <div className="grid flex-1 auto-rows-min gap-6 px-4 py-8">{children}</div>
-        <SheetFooter>
+        <SheetFooter className="flex-row justify-end gap-2">
           <Button
             type="submit"
             disabled={loading}

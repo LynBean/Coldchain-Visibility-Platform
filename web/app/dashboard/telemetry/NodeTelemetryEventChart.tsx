@@ -1,6 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/button.tsx'
 import {
   Card,
   CardContent,
@@ -16,24 +15,32 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart.tsx'
+import { DialogDescription } from '@/components/ui/dialog.tsx'
+import { Item, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
-import { Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
-import { Droplets, ExternalLink, Thermometer } from 'lucide-react'
+import { Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
+import { Clock, Cpu, Droplets, LocateFixed, Thermometer } from 'lucide-react'
 import React from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import EventDialog from './EventDialog.tsx'
 
 const NodeTelemetryEventChart: React.FunctionComponent<{
-  events: Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['telemetryEvents']
+  events: Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['telemetryEvents']
 }> = ({ events }) => {
   type Payload = {
     date: string
     temperature?: number
     humidity?: number
-    latitude?: number
-    longitude?: number
-    coreColdtagId: string
+    coreColdtag: {
+      id: string
+      identifier?: string
+      macAddress: string
+    }
+    coordinate?: {
+      latitude: number
+      longitude: number
+    }
   }
 
   const [state, setState] = React.useState<{
@@ -59,9 +66,8 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
               date: event.eventTime,
               temperature: event.temperature,
               humidity: event.humidity,
-              latitude: event.coordinate?.latitude,
-              longitude: event.coordinate?.longitude,
-              coreColdtagId: event.coreColdtag.id,
+              coreColdtag: event.coreColdtag,
+              coordinate: event.coordinate,
             }) as Payload
         )
         .toSorted((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
@@ -188,103 +194,97 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
         <EventDialog
           title="Telemetry Event"
           description={
-            <div className={tw`flex flex-row items-center gap-2`}>
-              <span>Recorded at</span>
-              <Typography variant="inline-code">
-                {new Date(dialogState.current.date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                })}
-              </Typography>
-            </div>
+            <DialogDescription>
+              Telemetry metrics recorded for this event
+            </DialogDescription>
           }
           open={dialogState.open}
           onClose={() => {
             setDialogState((state) => ({ ...state, open: false }))
           }}
         >
-          <div className={tw`flex flex-col flex-wrap gap-2 py-4`}>
+          <div className={tw`grid grid-cols-2 gap-2 py-4`}>
             {(
               [
                 {
                   icon: <Thermometer className={tw`text-red-500`} />,
-                  content: `${dialogState.current.temperature?.toLocaleString()} °C`,
+                  title: 'Temperature',
+                  description: (
+                    <DialogDescription>{`${dialogState.current.temperature?.toLocaleString()} °C`}</DialogDescription>
+                  ),
                 },
                 {
                   icon: <Droplets className={tw`text-blue-500`} />,
-                  content: dialogState.current.humidity?.toLocaleString(),
-                },
-              ] as {
-                icon: React.ReactNode
-                content: string | undefined
-              }[]
-            ).map(({ icon, content }, index) => (
-              <div key={index} className={tw`flex items-center justify-start`}>
-                <div className={tw`flex flex-row items-center gap-1`}>
-                  {icon}
-
-                  <Typography variant="inline-code" className={tw`text-sm`}>
-                    {content}
-                  </Typography>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className={tw`flex flex-col items-end gap-2`}>
-            {(
-              [
-                {
-                  title: 'Core Info',
-                  onClick: () => {
-                    window.open(
-                      `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard/core/${dialogState.current?.coreColdtagId}/info`,
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
-                  },
-                },
-                {
-                  title:
-                    dialogState.current.latitude != null &&
-                    dialogState.current.longitude != null
-                      ? 'View on map'
-                      : 'Map not available',
-                  disabled: !(
-                    dialogState.current.latitude != null &&
-                    dialogState.current.longitude != null
+                  title: 'Humidity',
+                  description: (
+                    <DialogDescription>
+                      {dialogState.current.humidity?.toLocaleString()}
+                    </DialogDescription>
                   ),
-                  onClick: () => {
-                    window.open(
-                      `https://www.google.com/maps?q=${dialogState.current?.latitude},${dialogState.current?.longitude}`,
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
-                  },
+                },
+                {
+                  className: 'col-span-2',
+                  icon: <Clock />,
+                  title: 'Time',
+                  description: (
+                    <DialogDescription>
+                      {new Date(dialogState.current.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })}
+                    </DialogDescription>
+                  ),
+                },
+                {
+                  className: 'col-span-2',
+                  icon: <Cpu />,
+                  title: 'Router Info',
+                  description: (
+                    <div className="flex flex-col gap-1">
+                      <DialogDescription>
+                        {dialogState.current.coreColdtag.identifier}
+                      </DialogDescription>
+                      <div className="flex flex-row gap-1 text-muted-foreground">
+                        <Typography variant="inline-code">
+                          {dialogState.current.coreColdtag.id}
+                        </Typography>
+                        <Typography variant="inline-code">
+                          {dialogState.current.coreColdtag.macAddress}
+                        </Typography>
+                      </div>
+                    </div>
+                  ),
+                },
+                {
+                  className: 'col-span-2',
+                  icon: <LocateFixed />,
+                  title: 'Coordinate',
+                  description: dialogState.current.coordinate ? (
+                    <DialogDescription>
+                      {`${dialogState.current.coordinate.latitude}, ${dialogState.current.coordinate.longitude}`}
+                    </DialogDescription>
+                  ) : (
+                    <DialogDescription>Not Available</DialogDescription>
+                  ),
                 },
               ] as {
-                title: string
-                disabled?: boolean
-                onClick: () => void
+                className?: string
+                icon: React.ReactNode
+                title: string | undefined
+                description?: string | React.ReactNode | undefined
               }[]
-            ).map(({ title, disabled, onClick }, index) => (
-              <div key={index} className={tw`flex items-center justify-start`}>
-                <div className={tw`flex flex-col gap-1`}>
-                  <Button
-                    disabled={disabled}
-                    className="flex flex-row items-center justify-center"
-                    variant="outline"
-                    onClick={onClick}
-                  >
-                    <ExternalLink />
-                    {title}
-                  </Button>
-                </div>
-              </div>
+            ).map(({ className, icon, title, description }, index) => (
+              <Item key={index} className={className} variant="outline">
+                <ItemMedia variant="icon">{icon}</ItemMedia>
+                <ItemContent>
+                  <ItemTitle>{title}</ItemTitle>
+                  {description}
+                </ItemContent>
+              </Item>
             ))}
           </div>
         </EventDialog>

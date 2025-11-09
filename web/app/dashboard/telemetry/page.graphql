@@ -1,4 +1,4 @@
-query CVP_DashboardCharts_DisplayCoreColdtagAll {
+query CVP_DashboardTelemetry_DisplayCoreColdtagAll {
   displayCoreColdtag {
     all {
       id
@@ -8,7 +8,7 @@ query CVP_DashboardCharts_DisplayCoreColdtagAll {
   }
 }
 
-query CVP_DashboardCharts_DisplayNodeColdtagAll {
+query CVP_DashboardTelemetry_DisplayNodeColdtagAll {
   displayNodeColdtag {
     all {
       id
@@ -18,7 +18,7 @@ query CVP_DashboardCharts_DisplayNodeColdtagAll {
   }
 }
 
-query CVP_DashboardCharts_DisplayCoreColdtagById($coreId: ID!) {
+query CVP_DashboardTelemetry_DisplayCoreColdtagById($coreId: ID!) {
   displayCoreColdtag {
     byId(coreId: $coreId) {
       id
@@ -37,7 +37,17 @@ query CVP_DashboardCharts_DisplayCoreColdtagById($coreId: ID!) {
   }
 }
 
-query CVP_DashboardCharts_DisplayNodeColdtagById($nodeId: ID!) {
+query CVP_DashboardTelemetry_DisplayCoreColdtagByIdBasics($coreId: ID!) {
+  displayCoreColdtag {
+    byId(coreId: $coreId) {
+      id
+      macAddress
+      identifier
+    }
+  }
+}
+
+query CVP_DashboardTelemetry_DisplayNodeColdtagById($nodeId: ID!) {
   displayNodeColdtag {
     byId(nodeId: $nodeId) {
       id
@@ -47,6 +57,8 @@ query CVP_DashboardCharts_DisplayNodeColdtagById($nodeId: ID!) {
         id
         coreColdtag {
           id
+          identifier
+          macAddress
         }
         temperature
         humidity
@@ -62,6 +74,8 @@ query CVP_DashboardCharts_DisplayNodeColdtagById($nodeId: ID!) {
         id
         coreColdtag {
           id
+          identifier
+          macAddress
         }
         coordinate {
           latitude
@@ -75,6 +89,8 @@ query CVP_DashboardCharts_DisplayNodeColdtagById($nodeId: ID!) {
         id
         coreColdtag {
           id
+          identifier
+          macAddress
         }
         coordinate {
           latitude

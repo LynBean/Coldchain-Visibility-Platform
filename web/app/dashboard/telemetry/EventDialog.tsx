@@ -9,7 +9,7 @@ import React from 'react'
 const EventDialog: React.FunctionComponent<
   React.PropsWithChildren & {
     title: string
-    description: string | React.ReactNode
+    description?: string | React.ReactNode
     open: boolean
     onClose: () => void
   }
@@ -23,7 +23,7 @@ const EventDialog: React.FunctionComponent<
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-lg max-w-11/12 rounded">
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
           {props.description}

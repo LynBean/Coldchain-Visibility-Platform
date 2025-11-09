@@ -22,10 +22,10 @@ import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { Spinner } from '@/components/ui/spinner.tsx'
 import { useErrorState } from '@/stores/error.tsx'
 import {
-  Cvp_DashboardCharts_DisplayCoreColdtagAllQuery,
-  Cvp_DashboardCharts_DisplayCoreColdtagByIdQuery,
-  Cvp_DashboardCharts_DisplayNodeColdtagAllQuery,
-  Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery,
+  Cvp_DashboardTelemetry_DisplayCoreColdtagAllQuery,
+  Cvp_DashboardTelemetry_DisplayCoreColdtagByIdQuery,
+  Cvp_DashboardTelemetry_DisplayNodeColdtagAllQuery,
+  Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery,
 } from '@/stores/graphql/generated.ts'
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -41,16 +41,16 @@ const DashboardChartsPage = () => {
 
   const [state, setState] = React.useState<{
     loading: boolean
-    cores?: Cvp_DashboardCharts_DisplayCoreColdtagAllQuery['displayCoreColdtag']['all']
-    nodes?: Cvp_DashboardCharts_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all']
+    cores?: Cvp_DashboardTelemetry_DisplayCoreColdtagAllQuery['displayCoreColdtag']['all']
+    nodes?: Cvp_DashboardTelemetry_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all']
 
     fetching: boolean
     current?:
-      | Cvp_DashboardCharts_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']
-      | Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']
+      | Cvp_DashboardTelemetry_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']
+      | Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']
     selected?:
-      | Cvp_DashboardCharts_DisplayCoreColdtagAllQuery['displayCoreColdtag']['all'][number]
-      | Cvp_DashboardCharts_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all'][number]
+      | Cvp_DashboardTelemetry_DisplayCoreColdtagAllQuery['displayCoreColdtag']['all'][number]
+      | Cvp_DashboardTelemetry_DisplayNodeColdtagAllQuery['displayNodeColdtag']['all'][number]
   }>({
     loading: true,
     fetching: false,
@@ -68,8 +68,8 @@ const DashboardChartsPage = () => {
             displayNodeColdtag: { all: nodes },
           },
         ] = await Promise.all([
-          gqlClient.CVP_DashboardCharts_DisplayCoreColdtagAll(),
-          gqlClient.CVP_DashboardCharts_DisplayNodeColdtagAll(),
+          gqlClient.CVP_DashboardTelemetry_DisplayCoreColdtagAll(),
+          gqlClient.CVP_DashboardTelemetry_DisplayNodeColdtagAll(),
         ])
         setState((state) => ({ ...state, cores, nodes }))
       } catch (err) {
@@ -87,7 +87,7 @@ const DashboardChartsPage = () => {
         if (state.selected?.__typename === 'CoreColdtag') {
           const {
             displayCoreColdtag: { byId: current },
-          } = await gqlClient.CVP_DashboardCharts_DisplayCoreColdtagById({
+          } = await gqlClient.CVP_DashboardTelemetry_DisplayCoreColdtagById({
             coreId: state.selected.id,
           })
           setState((state) => ({ ...state, current }))
@@ -96,7 +96,7 @@ const DashboardChartsPage = () => {
         if (state.selected?.__typename === 'NodeColdtag') {
           const {
             displayNodeColdtag: { byId: current },
-          } = await gqlClient.CVP_DashboardCharts_DisplayNodeColdtagById({
+          } = await gqlClient.CVP_DashboardTelemetry_DisplayNodeColdtagById({
             nodeId: state.selected.id,
           })
           setState((state) => ({ ...state, current }))

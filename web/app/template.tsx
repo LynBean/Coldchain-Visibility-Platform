@@ -5,7 +5,6 @@ import { SidebarProvider } from '@/components/ui/sidebar.tsx'
 import { Toaster } from '@/components/ui/sonner.tsx'
 import { ThemeProvider } from 'next-themes'
 import React from 'react'
-import { LoadingBarContainer } from 'react-top-loading-bar'
 import StoreProvider from '../stores/index.tsx'
 import { Provider as NavigationProgressProvider } from './navigation-progress.tsx'
 
@@ -29,7 +28,7 @@ const RootTemplate = ({ children }: { children: React.ReactNode }) => {
       <Providers>
         <SidebarProvider defaultOpen={true}>
           <Toaster closeButton={true} position="top-right" />
-          <LoadingBarContainer>{children}</LoadingBarContainer>
+          {children}
         </SidebarProvider>
       </Providers>
     </ThemeProvider>

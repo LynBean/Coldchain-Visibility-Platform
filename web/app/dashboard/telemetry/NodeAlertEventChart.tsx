@@ -1,7 +1,6 @@
 'use client'
 
 import { capitalize } from '@/common/string.ts'
-import { Button } from '@/components/ui/button.tsx'
 import {
   Card,
   CardContent,
@@ -16,10 +15,12 @@ import {
   ChartLegendContent,
   ChartTooltip,
 } from '@/components/ui/chart.tsx'
+import { DialogDescription } from '@/components/ui/dialog.tsx'
+import { Item, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
-import { Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
-import { ExternalLink } from 'lucide-react'
+import { Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
+import { Clock, Cpu, LocateFixed } from 'lucide-react'
 import React from 'react'
 import RechartsPrimitive, {
   CartesianGrid,
@@ -32,8 +33,8 @@ import EventDialog from './EventDialog.tsx'
 
 const NodeAlertEventChart: React.FunctionComponent<{
   events: (
-    | Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertLiquidEvents'][number]
-    | Cvp_DashboardCharts_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertImpactEvents'][number]
+    | Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertLiquidEvents'][number]
+    | Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery['displayNodeColdtag']['byId']['alertImpactEvents'][number]
   )[]
 }> = ({ events }) => {
   type Payload = {
@@ -41,9 +42,15 @@ const NodeAlertEventChart: React.FunctionComponent<{
     type: 'liquid' | 'impact'
     liquid?: number
     impact?: number
-    latitude?: number
-    longitude?: number
-    coreColdtagId: string
+    coreColdtag: {
+      id: string
+      identifier?: string
+      macAddress: string
+    }
+    coordinate?: {
+      latitude: number
+      longitude: number
+    }
   }
 
   const [state, setState] = React.useState<{
@@ -88,9 +95,8 @@ const NodeAlertEventChart: React.FunctionComponent<{
               event.__typename === 'NodeColdtagEventAlertImpact'
                 ? clampedValue
                 : undefined,
-            latitude: event.coordinate?.latitude,
-            longitude: event.coordinate?.longitude,
-            coreColdtagId: event.coreColdtag.id,
+            coreColdtag: event.coreColdtag,
+            coordinate: event.coordinate,
           } as Payload
         }),
     }))
@@ -213,75 +219,81 @@ const NodeAlertEventChart: React.FunctionComponent<{
         <EventDialog
           title={`${capitalize(dialogState.current.type)} alert`}
           description={
-            <div className={tw`flex flex-row items-center gap-2`}>
-              <span>Recorded at</span>
-              <Typography variant="inline-code">
-                {new Date(dialogState.current.date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                })}
-              </Typography>
-            </div>
+            <DialogDescription>
+              Telemetry metrics recorded for this alert event
+            </DialogDescription>
           }
           open={dialogState.open}
           onClose={() => {
             setDialogState((state) => ({ ...state, open: false }))
           }}
         >
-          <div className={tw`flex flex-col items-end gap-2`}>
+          <div className={tw`grid grid-cols-2 gap-2 py-4`}>
             {(
               [
                 {
-                  title: 'Core Info',
-                  onClick: () => {
-                    window.open(
-                      `${process.env.NEXT_PUBLIC_WEB_URL}/dashboard/core/${dialogState.current?.coreColdtagId}/info`,
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
-                  },
+                  className: 'col-span-2',
+                  icon: <Clock />,
+                  title: 'Time',
+                  description: (
+                    <DialogDescription>
+                      {new Date(dialogState.current.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })}
+                    </DialogDescription>
+                  ),
                 },
                 {
-                  title:
-                    dialogState.current.latitude != null &&
-                    dialogState.current.longitude != null
-                      ? 'View on map'
-                      : 'Map not available',
-                  disabled: !(
-                    dialogState.current.latitude != null &&
-                    dialogState.current.longitude != null
+                  className: 'col-span-2',
+                  icon: <Cpu />,
+                  title: 'Router Info',
+                  description: (
+                    <div className="flex flex-col gap-1">
+                      <DialogDescription>
+                        {dialogState.current.coreColdtag.identifier}
+                      </DialogDescription>
+                      <div className="flex flex-row gap-1 text-muted-foreground">
+                        <Typography variant="inline-code">
+                          {dialogState.current.coreColdtag.id}
+                        </Typography>
+                        <Typography variant="inline-code">
+                          {dialogState.current.coreColdtag.macAddress}
+                        </Typography>
+                      </div>
+                    </div>
                   ),
-                  onClick: () => {
-                    window.open(
-                      `https://www.google.com/maps?q=${dialogState.current?.latitude},${dialogState.current?.longitude}`,
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
-                  },
+                },
+                {
+                  className: 'col-span-2',
+                  icon: <LocateFixed />,
+                  title: 'Coordinate',
+                  description: dialogState.current.coordinate ? (
+                    <DialogDescription>
+                      {`${dialogState.current.coordinate.latitude}, ${dialogState.current.coordinate.longitude}`}
+                    </DialogDescription>
+                  ) : (
+                    <DialogDescription>Not Available</DialogDescription>
+                  ),
                 },
               ] as {
-                title: string
-                disabled?: boolean
-                onClick: () => void
+                className?: string
+                icon: React.ReactNode
+                title: string | undefined
+                description?: string | React.ReactNode | undefined
               }[]
-            ).map(({ title, disabled, onClick }, index) => (
-              <div key={index} className={tw`flex items-center justify-start`}>
-                <div className={tw`flex flex-col gap-1`}>
-                  <Button
-                    disabled={disabled}
-                    className="flex flex-row items-center justify-center"
-                    variant="outline"
-                    onClick={onClick}
-                  >
-                    <ExternalLink />
-                    {title}
-                  </Button>
-                </div>
-              </div>
+            ).map(({ className, icon, title, description }, index) => (
+              <Item key={index} className={className} variant="outline">
+                <ItemMedia variant="icon">{icon}</ItemMedia>
+                <ItemContent>
+                  <ItemTitle>{title}</ItemTitle>
+                  {description}
+                </ItemContent>
+              </Item>
             ))}
           </div>
         </EventDialog>

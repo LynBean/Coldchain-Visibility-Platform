@@ -30,7 +30,7 @@ const DeviceUpdateSheetTemplate: React.FC<
         }
       }}
     >
-      <DialogContent>
+      <DialogContent className="w-lg max-w-11/12 rounded">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -38,7 +38,7 @@ const DeviceUpdateSheetTemplate: React.FC<
           </DialogDescription>
         </DialogHeader>
         <div className="grid flex-1 auto-rows-min gap-6 px-4 py-8">{children}</div>
-        <DialogFooter>
+        <DialogFooter className="flex-row justify-end gap-2">
           <Button
             type="submit"
             disabled={loading}

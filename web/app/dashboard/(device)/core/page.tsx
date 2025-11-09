@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/empty.tsx'
 import { Spinner } from '@/components/ui/spinner.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
+import { useIsMobile } from '@/hooks/use-mobile.ts'
+import { cn } from '@/lib/utils.ts'
 import { useErrorState } from '@/stores/error.tsx'
 import { Cvp_DashboardCore_DisplayCoreColdtagAllQuery } from '@/stores/graphql/generated.ts'
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
@@ -24,6 +26,7 @@ import CoreUpdateSheet from './CoreUpdateSheet.tsx'
 const DashboardCorePage = () => {
   const [, { catchError }] = useErrorState()
   const gqlClient = useGraphQLClient()
+  const isMobile = useIsMobile()
 
   const [state, setState] = React.useState<{
     loading: boolean
@@ -66,8 +69,13 @@ const DashboardCorePage = () => {
     <>
       <AnimatePresence mode="wait">
         <div className="flex h-full w-full flex-col items-center">
-          <div className="flex w-0 min-w-6xl shrink flex-col items-center gap-8 py-12">
-            <div className="flex w-full flex-row items-center justify-between">
+          <div className="flex w-6xl max-w-5/6 flex-col items-center gap-8 py-12">
+            <div
+              className={cn(
+                'flex w-full justify-between',
+                isMobile ? 'flex-col gap-4' : 'flex-row items-center'
+              )}
+            >
               <div className="flex w-full flex-col">
                 <Typography variant="h3" className="text-accent-foreground">
                   Core Device List
