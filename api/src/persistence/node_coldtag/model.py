@@ -2,11 +2,12 @@ from collections.abc import Callable, Coroutine
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
+from fastapi import FastAPI
 from pydantic import BaseModel, ConfigDict
 
+from src.persistence.core_coldtag import CoreColdtagPersistence, PersistedCoreColdtag
+
 from .schema import (
-    CoreColdtagEventSchema,
-    CoreColdtagSchema,
     NodeColdtagEventAlertImpactSchema,
     NodeColdtagEventAlertLiquidSchema,
     NodeColdtagEventSchema,
@@ -14,36 +15,7 @@ from .schema import (
 )
 
 if TYPE_CHECKING:
-    from . import ColdtagPersistence
-
-
-class PersistedCoreColdtagEvent(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    id: str
-    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
-    latitude: float | None
-    longitude: float | None
-    event_time: datetime
-    time: datetime
-
-    @staticmethod
-    async def construct_model(
-        coldtag_persistence: "ColdtagPersistence", data: CoreColdtagEventSchema, /
-    ) -> "PersistedCoreColdtagEvent":
-        async def retrieve_core_coldtag() -> PersistedCoreColdtag:
-            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
-            assert persisted_core_coldtag is not None
-            return persisted_core_coldtag
-
-        return PersistedCoreColdtagEvent(
-            id=str(data.id),
-            core_coldtag=retrieve_core_coldtag,
-            latitude=data.latitude,
-            longitude=data.longitude,
-            event_time=data.event_time,
-            time=data.time,
-        )
+    from src.persistence.node_coldtag import NodeColdtagPersistence
 
 
 class PersistedNodeColdtagEvent(BaseModel):
@@ -51,7 +23,7 @@ class PersistedNodeColdtagEvent(BaseModel):
 
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
-    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, PersistedCoreColdtag]]
     temperature: float | None
     humidity: float | None
     core_coldtag_received_time: datetime
@@ -59,16 +31,16 @@ class PersistedNodeColdtagEvent(BaseModel):
     time: datetime
 
     @staticmethod
-    async def construct_model(
-        coldtag_persistence: "ColdtagPersistence", data: NodeColdtagEventSchema, /
-    ) -> "PersistedNodeColdtagEvent":
+    async def construct_model(app: FastAPI, data: NodeColdtagEventSchema, /) -> "PersistedNodeColdtagEvent":
         async def retrieve_node_coldtag() -> PersistedNodeColdtag:
-            persisted_node_coldtag = await coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
+            node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
+            persisted_node_coldtag = await node_coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
             assert persisted_node_coldtag is not None
             return persisted_node_coldtag
 
         async def retrieve_core_coldtag() -> PersistedCoreColdtag:
-            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+            persisted_core_coldtag = await core_coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
             assert persisted_core_coldtag is not None
             return persisted_core_coldtag
 
@@ -89,22 +61,24 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
 
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
-    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, PersistedCoreColdtag]]
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
     @staticmethod
     async def construct_model(
-        coldtag_persistence: "ColdtagPersistence", data: NodeColdtagEventAlertLiquidSchema, /
+        app: FastAPI, data: NodeColdtagEventAlertLiquidSchema, /
     ) -> "PersistedNodeColdtagEventAlertLiquid":
         async def retrieve_node_coldtag() -> PersistedNodeColdtag:
-            persisted_node_coldtag = await coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
+            node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
+            persisted_node_coldtag = await node_coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
             assert persisted_node_coldtag is not None
             return persisted_node_coldtag
 
         async def retrieve_core_coldtag() -> PersistedCoreColdtag:
-            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+            persisted_core_coldtag = await core_coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
             assert persisted_core_coldtag is not None
             return persisted_core_coldtag
 
@@ -123,22 +97,24 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
 
     id: str
     node_coldtag: Callable[..., Coroutine[Any, Any, "PersistedNodeColdtag"]]
-    core_coldtag: Callable[..., Coroutine[Any, Any, "PersistedCoreColdtag"]]
+    core_coldtag: Callable[..., Coroutine[Any, Any, PersistedCoreColdtag]]
     core_coldtag_received_time: datetime
     event_time: datetime
     time: datetime
 
     @staticmethod
     async def construct_model(
-        coldtag_persistence: "ColdtagPersistence", data: NodeColdtagEventAlertImpactSchema, /
+        app: FastAPI, data: NodeColdtagEventAlertImpactSchema, /
     ) -> "PersistedNodeColdtagEventAlertImpact":
         async def retrieve_node_coldtag() -> PersistedNodeColdtag:
-            persisted_node_coldtag = await coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
+            node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
+            persisted_node_coldtag = await node_coldtag_persistence.find_node_by_id(str(data.node_coldtag_id))
             assert persisted_node_coldtag is not None
             return persisted_node_coldtag
 
         async def retrieve_core_coldtag() -> PersistedCoreColdtag:
-            persisted_core_coldtag = await coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
+            core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+            persisted_core_coldtag = await core_coldtag_persistence.find_core_by_id(str(data.core_coldtag_id))
             assert persisted_core_coldtag is not None
             return persisted_core_coldtag
 
@@ -158,27 +134,28 @@ class PersistedNodeColdtag(BaseModel):
     id: str
     mac_address: str
     identifier: str | None
-    telemetry_events: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtagEvent]]]
-    alert_liquid_events: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtagEventAlertLiquid]]]
-    alert_impact_events: Callable[..., Coroutine[Any, Any, list[PersistedNodeColdtagEventAlertImpact]]]
+    telemetry_events: Callable[..., Coroutine[Any, Any, list["PersistedNodeColdtagEvent"]]]
+    alert_liquid_events: Callable[..., Coroutine[Any, Any, list["PersistedNodeColdtagEventAlertLiquid"]]]
+    alert_impact_events: Callable[..., Coroutine[Any, Any, list["PersistedNodeColdtagEventAlertImpact"]]]
     deleted: bool
     created_time: datetime
     updated_time: datetime
 
     @staticmethod
-    async def construct_model(
-        coldtag_persistence: "ColdtagPersistence", data: NodeColdtagSchema, /
-    ) -> "PersistedNodeColdtag":
-        async def retrieve_telemetry_events() -> list[PersistedNodeColdtagEvent]:
-            events = await coldtag_persistence.find_node_events_by_node_id(str(data.id))
+    async def construct_model(app: FastAPI, data: NodeColdtagSchema, /) -> "PersistedNodeColdtag":
+        async def retrieve_telemetry_events() -> list["PersistedNodeColdtagEvent"]:
+            node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
+            events = await node_coldtag_persistence.find_node_events_by_node_id(str(data.id))
             return sorted(events, key=lambda x: x.event_time, reverse=True)
 
-        async def retrieve_alert_liquid_events() -> list[PersistedNodeColdtagEventAlertLiquid]:
-            liquids = await coldtag_persistence.find_node_event_alert_liquids_by_node_id(str(data.id))
+        async def retrieve_alert_liquid_events() -> list["PersistedNodeColdtagEventAlertLiquid"]:
+            node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
+            liquids = await node_coldtag_persistence.find_node_event_alert_liquids_by_node_id(str(data.id))
             return sorted(liquids, key=lambda x: x.event_time, reverse=True)
 
-        async def retrieve_alert_impact_events() -> list[PersistedNodeColdtagEventAlertImpact]:
-            impacts = await coldtag_persistence.find_node_event_alert_impacts_by_node_id(str(data.id))
+        async def retrieve_alert_impact_events() -> list["PersistedNodeColdtagEventAlertImpact"]:
+            node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
+            impacts = await node_coldtag_persistence.find_node_event_alert_impacts_by_node_id(str(data.id))
             return sorted(impacts, key=lambda x: x.event_time, reverse=True)
 
         return PersistedNodeColdtag(
@@ -188,36 +165,6 @@ class PersistedNodeColdtag(BaseModel):
             telemetry_events=retrieve_telemetry_events,
             alert_liquid_events=retrieve_alert_liquid_events,
             alert_impact_events=retrieve_alert_impact_events,
-            deleted=bool(data.deleted),
-            created_time=data.created_time,
-            updated_time=data.updated_time,
-        )
-
-
-class PersistedCoreColdtag(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    id: str
-    mac_address: str
-    identifier: str | None
-    telemetry_events: Callable[..., Coroutine[Any, Any, list[PersistedCoreColdtagEvent]]]
-    deleted: bool
-    created_time: datetime
-    updated_time: datetime
-
-    @staticmethod
-    async def construct_model(
-        coldtag_persistence: "ColdtagPersistence", data: CoreColdtagSchema, /
-    ) -> "PersistedCoreColdtag":
-        async def retrieve_telemetry_events() -> list[PersistedCoreColdtagEvent]:
-            events = await coldtag_persistence.find_core_events_by_core_id(str(data.id))
-            return sorted(events, key=lambda x: x.event_time, reverse=True)
-
-        return PersistedCoreColdtag(
-            id=str(data.id),
-            mac_address=data.mac_address,
-            identifier=data.identifier,
-            telemetry_events=retrieve_telemetry_events,
             deleted=bool(data.deleted),
             created_time=data.created_time,
             updated_time=data.updated_time,

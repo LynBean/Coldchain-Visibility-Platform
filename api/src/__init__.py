@@ -13,7 +13,8 @@ from supabase import AsyncClientOptions
 from supabase import create_async_client as create_supabase_client
 
 from src.listener import create_mqtt_client
-from src.persistence.coldtag import ColdtagPersistence
+from src.persistence.core_coldtag import CoreColdtagPersistence
+from src.persistence.node_coldtag import NodeColdtagPersistence
 
 from .route import create_context, create_schema
 
@@ -40,7 +41,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     supabase_database_pool: asyncpg.Pool = app.extra["supabase_database_pool"]
 
-    app.extra["coldtag_persistence"] = ColdtagPersistence(app, supabase_database_pool)
+    app.extra["core_coldtag_persistence"] = CoreColdtagPersistence(app, supabase_database_pool)
+    app.extra["node_coldtag_persistence"] = NodeColdtagPersistence(app, supabase_database_pool)
 
     mqtt = await create_mqtt_client()
     app.extra["mqtt"] = mqtt.client

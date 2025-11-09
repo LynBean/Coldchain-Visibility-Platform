@@ -11,7 +11,8 @@ from strawberry.file_uploads import Upload
 from strawberry.schema.base import BaseSchema
 from supabase import AClient as SupabaseClient
 
-from src.persistence.coldtag import ColdtagPersistence
+from src.persistence.core_coldtag import CoreColdtagPersistence
+from src.persistence.node_coldtag import NodeColdtagPersistence
 from src.route.mutate import MutationSchema
 from src.route.query import QuerySchema
 
@@ -45,8 +46,12 @@ class AppContext(BaseContext):
         return self.app.extra["mqtt"]
 
     @cached_property
-    def coldtag_persistence(self) -> ColdtagPersistence:
-        return self.app.extra["coldtag_persistence"]
+    def core_coldtag_persistence(self) -> CoreColdtagPersistence:
+        return self.app.extra["core_coldtag_persistence"]
+
+    @cached_property
+    def node_coldtag_persistence(self) -> NodeColdtagPersistence:
+        return self.app.extra["node_coldtag_persistence"]
 
 
 def create_context(app: FastAPI, /, env: Literal["production", "development"]) -> Callable[..., AppContext]:

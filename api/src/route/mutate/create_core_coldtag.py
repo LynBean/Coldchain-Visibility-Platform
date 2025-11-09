@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 import strawberry
 from strawberry.types import Info
 
-from src.route.resolve.coldtag import CoreColdtag, resolve_core_coldtag
+from src.route.resolve.core_coldtag import CoreColdtag, resolve_core_coldtag
 
 if TYPE_CHECKING:
     from src.route import AppContext
@@ -18,9 +18,9 @@ class CoreColdtagCreate:
         info: Info["AppContext"],
         identifier: str | None = None,
     ) -> CoreColdtag:
-        coldtag_persistence = info.context.coldtag_persistence
+        core_coldtag_persistence = info.context.core_coldtag_persistence
 
-        persisted_core = await coldtag_persistence.create_core(
+        persisted_core = await core_coldtag_persistence.create_core(
             mac_address=mac_address,
             identifier=identifier,
         )

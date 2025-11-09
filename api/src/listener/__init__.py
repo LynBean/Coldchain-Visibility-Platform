@@ -12,7 +12,8 @@ from loguru import logger
 from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
-    from src.persistence.coldtag import ColdtagPersistence
+    from src.persistence.core_coldtag import CoreColdtagPersistence
+    from src.persistence.node_coldtag import NodeColdtagPersistence
 
 
 HOST: str = os.getenv("MQTT_BROKER_HOST", "127.0.0.1")
@@ -53,7 +54,7 @@ class AppMQTT(BaseModel):
         self.is_shutdown.set()
 
     async def subscribe_core_event(self, app: FastAPI, /) -> asyncio.Task:
-        coldtag_persistence: ColdtagPersistence = app.extra["coldtag_persistence"]
+        core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
 
         async def task() -> None:
             while True:
@@ -74,11 +75,11 @@ class AppMQTT(BaseModel):
                             longitude = float(payload["longitude"])
                             event_time = datetime.strptime(payload["event_time"], "%Y-%m-%dT%H:%M:%SZ").astimezone(UTC)
 
-                            persisted_core = await coldtag_persistence.find_core_by_mac_address(core_mac_address)
+                            persisted_core = await core_coldtag_persistence.find_core_by_mac_address(core_mac_address)
 
                             assert persisted_core is not None
 
-                            await coldtag_persistence.create_core_event(
+                            await core_coldtag_persistence.create_core_event(
                                 persisted_core.id,
                                 latitude=latitude,
                                 longitude=longitude,
@@ -96,7 +97,8 @@ class AppMQTT(BaseModel):
         return asyncio.create_task(task())
 
     async def subscribe_node_event(self, app: FastAPI, /) -> asyncio.Task:
-        coldtag_persistence: ColdtagPersistence = app.extra["coldtag_persistence"]
+        core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+        node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
 
         async def task() -> None:
             while True:
@@ -121,13 +123,13 @@ class AppMQTT(BaseModel):
                             ).astimezone(UTC)
                             event_time = datetime.strptime(payload["event_time"], "%Y-%m-%dT%H:%M:%SZ").astimezone(UTC)
 
-                            persisted_node = await coldtag_persistence.find_node_by_mac_address(node_mac_address)
-                            persisted_core = await coldtag_persistence.find_core_by_mac_address(core_mac_address)
+                            persisted_node = await node_coldtag_persistence.find_node_by_mac_address(node_mac_address)
+                            persisted_core = await core_coldtag_persistence.find_core_by_mac_address(core_mac_address)
 
                             assert persisted_node is not None
                             assert persisted_core is not None
 
-                            await coldtag_persistence.create_node_event(
+                            await node_coldtag_persistence.create_node_event(
                                 persisted_node.id,
                                 core_id=persisted_core.id,
                                 temperature=temperature,
@@ -147,7 +149,8 @@ class AppMQTT(BaseModel):
         return asyncio.create_task(task())
 
     async def subscribe_node_event_alert_impact(self, app: FastAPI, /) -> asyncio.Task:
-        coldtag_persistence: ColdtagPersistence = app.extra["coldtag_persistence"]
+        core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+        node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
 
         async def task() -> None:
             while True:
@@ -170,13 +173,13 @@ class AppMQTT(BaseModel):
                             ).astimezone(UTC)
                             event_time = datetime.strptime(payload["event_time"], "%Y-%m-%dT%H:%M:%SZ").astimezone(UTC)
 
-                            persisted_node = await coldtag_persistence.find_node_by_mac_address(node_mac_address)
-                            persisted_core = await coldtag_persistence.find_core_by_mac_address(core_mac_address)
+                            persisted_node = await node_coldtag_persistence.find_node_by_mac_address(node_mac_address)
+                            persisted_core = await core_coldtag_persistence.find_core_by_mac_address(core_mac_address)
 
                             assert persisted_node is not None
                             assert persisted_core is not None
 
-                            await coldtag_persistence.create_node_event_alert_impact(
+                            await node_coldtag_persistence.create_node_event_alert_impact(
                                 persisted_node.id,
                                 core_id=persisted_core.id,
                                 core_received_time=core_coldtag_received_time,
@@ -194,7 +197,8 @@ class AppMQTT(BaseModel):
         return asyncio.create_task(task())
 
     async def subscribe_node_event_alert_liquid(self, app: FastAPI, /) -> asyncio.Task:
-        coldtag_persistence: ColdtagPersistence = app.extra["coldtag_persistence"]
+        core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+        node_coldtag_persistence: NodeColdtagPersistence = app.extra["node_coldtag_persistence"]
 
         async def task() -> None:
             while True:
@@ -217,13 +221,13 @@ class AppMQTT(BaseModel):
                             ).astimezone(UTC)
                             event_time = datetime.strptime(payload["event_time"], "%Y-%m-%dT%H:%M:%SZ").astimezone(UTC)
 
-                            persisted_node = await coldtag_persistence.find_node_by_mac_address(node_mac_address)
-                            persisted_core = await coldtag_persistence.find_core_by_mac_address(core_mac_address)
+                            persisted_node = await node_coldtag_persistence.find_node_by_mac_address(node_mac_address)
+                            persisted_core = await core_coldtag_persistence.find_core_by_mac_address(core_mac_address)
 
                             assert persisted_node is not None
                             assert persisted_core is not None
 
-                            await coldtag_persistence.create_node_event_alert_liquid(
+                            await node_coldtag_persistence.create_node_event_alert_liquid(
                                 persisted_node.id,
                                 core_id=persisted_core.id,
                                 core_received_time=core_coldtag_received_time,
