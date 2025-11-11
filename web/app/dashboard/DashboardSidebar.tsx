@@ -62,7 +62,7 @@ const DashboardSidebarHeader: React.FC = () => {
   )
 }
 
-const DashboardSidebarContent: React.FC = () => {
+const DashboardAdminPanel: React.FC = () => {
   const router = useRouter()
   const { setOpenMobile } = useSidebar()
 
@@ -77,7 +77,7 @@ const DashboardSidebarContent: React.FC = () => {
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              router.replace('/dashboard')
+              router.push('/dashboard')
               setOpenMobile(false)
             }}
           >
@@ -88,14 +88,14 @@ const DashboardSidebarContent: React.FC = () => {
           </SidebarMenuButton>
         </SidebarMenuItem>
 
-        {/** Charts */}
+        {/** Telemetry */}
         <SidebarMenuItem>
           <SidebarMenuButton
             tooltip="telemetry"
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              router.replace('/dashboard/telemetry')
+              router.push('/dashboard/telemetry')
               setOpenMobile(false)
             }}
           >
@@ -125,7 +125,7 @@ const DashboardSidebarContent: React.FC = () => {
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
-                      router.replace('/dashboard/core')
+                      router.push('/dashboard/core')
                       setOpenMobile(false)
                     }}
                   >
@@ -139,7 +139,7 @@ const DashboardSidebarContent: React.FC = () => {
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
-                      router.replace('/dashboard/node')
+                      router.push('/dashboard/node')
                       setOpenMobile(false)
                     }}
                   >
@@ -157,6 +157,54 @@ const DashboardSidebarContent: React.FC = () => {
   )
 }
 
+const DashboardRouteCyclePanel: React.FC = () => {
+  const router = useRouter()
+  const { setOpenMobile } = useSidebar()
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>RouteCycle</SidebarGroupLabel>
+      <SidebarMenu>
+        {/** Report */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            tooltip="report"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              router.push('/dashboard/cycle/report')
+              setOpenMobile(false)
+            }}
+          >
+            <ChartSpline />
+            <a href="/dashboard/cycle/report">
+              <span>Report</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+
+        {/** View all */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            tooltip="all"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              router.push('/dashboard/cycle')
+              setOpenMobile(false)
+            }}
+          >
+            <Target />
+            <a href="/dashboard/cycle">
+              <span>Cycles</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+}
+
 const DashboardSidebar: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { setTheme } = useTheme()
 
@@ -167,7 +215,8 @@ const DashboardSidebar: React.FC<React.PropsWithChildren> = ({ children }) => {
           <DashboardSidebarHeader />
         </SidebarHeader>
         <SidebarContent>
-          <DashboardSidebarContent />
+          <DashboardAdminPanel />
+          <DashboardRouteCyclePanel />
         </SidebarContent>
         <SidebarRail />
       </Sidebar>

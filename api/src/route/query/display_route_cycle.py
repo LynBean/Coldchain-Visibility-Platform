@@ -27,9 +27,9 @@ class RouteCycleDisplay:
             )
 
         @strawberry.field
-        async def by_id(self, core_id: strawberry.scalars.ID, info: Info["AppContext"]) -> RouteCycle:
+        async def by_id(self, route_cycle_id: strawberry.scalars.ID, info: Info["AppContext"]) -> RouteCycle:
             route_cycle_persistence = info.context.route_cycle_persistence
-            persisted_route_cycle = await route_cycle_persistence.find_route_cycle_by_id(core_id)
+            persisted_route_cycle = await route_cycle_persistence.find_route_cycle_by_id(route_cycle_id)
 
             if persisted_route_cycle is None:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)

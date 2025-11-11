@@ -14,7 +14,7 @@ class RouteCycleCreate:
     @strawberry.field
     async def create_route_cycle(
         self,
-        node_coldtag_id: str,
+        node_coldtag_id: strawberry.scalars.ID,
         info: Info["AppContext"],
         identifier: str | None = None,
         description: str | None = None,

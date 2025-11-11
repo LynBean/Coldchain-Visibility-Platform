@@ -142,7 +142,7 @@ class RouteCyclePersistence(BasePersistence):
                         $11
                     ) RETURNING id
                     """,
-                    str(node_coldtag_id),
+                    int(node_coldtag_id),
                     identifier,
                     description,
                     owner_name,
