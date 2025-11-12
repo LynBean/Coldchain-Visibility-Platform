@@ -31,6 +31,7 @@ class RouteCycle:
     destination_longitude: float | None
     temperature_alert_threshold: float | None
     humidity_alert_threshold: float | None
+    started: bool
     completed: bool
     canceled: bool
     created_time: datetime
@@ -55,6 +56,7 @@ async def resolve_route_cycle(route_cycle: PersistedRouteCycle, /, info: strawbe
         destination_longitude=route_cycle.destination_longitude,
         temperature_alert_threshold=route_cycle.temperature_alert_threshold,
         humidity_alert_threshold=route_cycle.humidity_alert_threshold,
+        started=route_cycle.started,
         completed=route_cycle.completed,
         canceled=route_cycle.canceled,
         created_time=route_cycle.created_time,

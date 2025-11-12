@@ -52,3 +52,66 @@ class RouteCycleUpdate:
             humidity_alert_threshold=MISSING if humidity_alert_threshold is None else humidity_alert_threshold,
         )
         return await resolve_route_cycle(updated_persisted_route_cycle, info=info)
+
+    @strawberry.field
+    async def start_route_cycle(
+        self,
+        route_cycle_id: strawberry.scalars.ID,
+        info: Info["AppContext"],
+    ) -> RouteCycle:
+        route_cycle_persistence = info.context.route_cycle_persistence
+
+        persisted_route_cycle = await route_cycle_persistence.find_route_cycle_by_id(route_cycle_id)
+
+        if persisted_route_cycle is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if persisted_route_cycle.started or persisted_route_cycle.completed or persisted_route_cycle.canceled:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+        updated_persisted_route_cycle = await route_cycle_persistence.update_route_cycle(
+            route_cycle_id,
+            started=True,
+        )
+        return await resolve_route_cycle(updated_persisted_route_cycle, info=info)
+
+    @strawberry.field
+    async def complete_route_cycle(
+        self,
+        route_cycle_id: strawberry.scalars.ID,
+        info: Info["AppContext"],
+    ) -> RouteCycle:
+        route_cycle_persistence = info.context.route_cycle_persistence
+
+        persisted_route_cycle = await route_cycle_persistence.find_route_cycle_by_id(route_cycle_id)
+
+        if persisted_route_cycle is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if not persisted_route_cycle.started or persisted_route_cycle.completed or persisted_route_cycle.canceled:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+        updated_persisted_route_cycle = await route_cycle_persistence.update_route_cycle(
+            route_cycle_id,
+            completed=True,
+        )
+        return await resolve_route_cycle(updated_persisted_route_cycle, info=info)
+
+    @strawberry.field
+    async def cancel_route_cycle(
+        self,
+        route_cycle_id: strawberry.scalars.ID,
+        info: Info["AppContext"],
+    ) -> RouteCycle:
+        route_cycle_persistence = info.context.route_cycle_persistence
+
+        persisted_route_cycle = await route_cycle_persistence.find_route_cycle_by_id(route_cycle_id)
+
+        if persisted_route_cycle is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        if persisted_route_cycle.completed or persisted_route_cycle.canceled:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+        updated_persisted_route_cycle = await route_cycle_persistence.update_route_cycle(
+            route_cycle_id,
+            canceled=True,
+        )
+        return await resolve_route_cycle(updated_persisted_route_cycle, info=info)

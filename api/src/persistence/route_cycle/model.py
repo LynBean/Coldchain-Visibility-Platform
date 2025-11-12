@@ -26,6 +26,7 @@ class PersistedRouteCycle(BaseModel):
     destination_longitude: float | None
     temperature_alert_threshold: float | None
     humidity_alert_threshold: float | None
+    started: bool
     completed: bool
     canceled: bool
     created_time: datetime
@@ -54,6 +55,7 @@ class PersistedRouteCycle(BaseModel):
             destination_longitude=data.destination_longitude,
             temperature_alert_threshold=data.temperature_alert_threshold,
             humidity_alert_threshold=data.humidity_alert_threshold,
+            started=bool(data.started),
             completed=bool(data.completed),
             canceled=bool(data.canceled),
             created_time=data.created_time,

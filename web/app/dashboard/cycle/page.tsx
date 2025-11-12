@@ -64,6 +64,78 @@ const DashboardCyclePage: React.FC = () => {
     })()
   }, [catchError, gqlClient])
 
+  const onClickStart = React.useCallback(
+    async (
+      value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+    ) => {
+      try {
+        const { startRouteCycle: next } =
+          await gqlClient.CVP_DashboardCycle_StartRouteCycle({
+            routeCycleId: value.id as string,
+          })
+        setState((state) => ({
+          ...state,
+          items: state.items
+            ? state.items.map((prev) => (prev.id === next.id ? next : prev))
+            : undefined,
+        }))
+      } catch (err) {
+        catchError(err as Error)
+      } finally {
+        setState((state) => ({ ...state, loading: false }))
+      }
+    },
+    [catchError, gqlClient]
+  )
+
+  const onClickComplete = React.useCallback(
+    async (
+      value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+    ) => {
+      try {
+        const { completeRouteCycle: next } =
+          await gqlClient.CVP_DashboardCycle_CompleteRouteCycle({
+            routeCycleId: value.id as string,
+          })
+        setState((state) => ({
+          ...state,
+          items: state.items
+            ? state.items.map((prev) => (prev.id === next.id ? next : prev))
+            : undefined,
+        }))
+      } catch (err) {
+        catchError(err as Error)
+      } finally {
+        setState((state) => ({ ...state, loading: false }))
+      }
+    },
+    [catchError, gqlClient]
+  )
+
+  const onClickCancel = React.useCallback(
+    async (
+      value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+    ) => {
+      try {
+        const { cancelRouteCycle: next } =
+          await gqlClient.CVP_DashboardCycle_CancelRouteCycle({
+            routeCycleId: value.id as string,
+          })
+        setState((state) => ({
+          ...state,
+          items: state.items
+            ? state.items.map((prev) => (prev.id === next.id ? next : prev))
+            : undefined,
+        }))
+      } catch (err) {
+        catchError(err as Error)
+      } finally {
+        setState((state) => ({ ...state, loading: false }))
+      }
+    },
+    [catchError, gqlClient]
+  )
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -130,6 +202,9 @@ const DashboardCyclePage: React.FC = () => {
                   onClickEdit={(value) => {
                     setUpdateSheetState((state) => ({ ...state, open: true, value }))
                   }}
+                  onClickStart={onClickStart}
+                  onClickComplete={onClickComplete}
+                  onClickCancel={onClickCancel}
                 />
               </motion.div>
             )}

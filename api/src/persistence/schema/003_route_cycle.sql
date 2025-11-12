@@ -29,6 +29,7 @@ CREATE TABLE "update_route_cycle" (
   "destination_longitude" DOUBLE PRECISION,
   "temperature_alert_threshold" DOUBLE PRECISION,
   "humidity_alert_threshold" DOUBLE PRECISION,
+  "started" BOOLEAN,
   "completed" BOOLEAN,
   "canceled" BOOLEAN,
   "time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -200,6 +201,19 @@ CREATE VIEW "route_cycle" AS (
       ),
       CRC.HUMIDITY_ALERT_THRESHOLD
     ) AS "humidity_alert_threshold",
+    (
+      SELECT
+        URC.STARTED
+      FROM
+        "update_route_cycle" URC
+      WHERE
+        URC.ROUTE_CYCLE_ID = CRC.ID
+        AND URC.STARTED IS NOT NULL
+      ORDER BY
+        URC.TIME DESC
+      LIMIT
+        1
+    ),
     (
       SELECT
         URC.COMPLETED

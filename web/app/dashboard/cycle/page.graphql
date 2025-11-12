@@ -16,6 +16,7 @@ query CVP_DashboardCycle_DisplayRouteCycleAll {
       destinationLongitude
       temperatureAlertThreshold
       humidityAlertThreshold
+      started
       completed
       canceled
     }
@@ -40,6 +41,7 @@ query CVP_DashboardCycle_DisplayRouteCycleById($routeCycleId: ID!) {
       destinationLongitude
       temperatureAlertThreshold
       humidityAlertThreshold
+      started
       completed
       canceled
     }
@@ -87,6 +89,7 @@ mutation CVP_DashboardCycle_CreateRouteCycle(
     destinationLongitude
     temperatureAlertThreshold
     humidityAlertThreshold
+    started
     completed
     canceled
   }
@@ -133,6 +136,76 @@ mutation CVP_DashboardCycle_UpdateRouteCycle(
     destinationLongitude
     temperatureAlertThreshold
     humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_StartRouteCycle($routeCycleId: ID!) {
+  startRouteCycle(routeCycleId: $routeCycleId) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureLatitude
+    departureLongitude
+    destinationLatitude
+    destinationLongitude
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_CompleteRouteCycle($routeCycleId: ID!) {
+  completeRouteCycle(routeCycleId: $routeCycleId) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureLatitude
+    departureLongitude
+    destinationLatitude
+    destinationLongitude
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_CancelRouteCycle($routeCycleId: ID!) {
+  cancelRouteCycle(routeCycleId: $routeCycleId) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureLatitude
+    departureLongitude
+    destinationLatitude
+    destinationLongitude
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
     completed
     canceled
   }

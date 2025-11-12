@@ -56,8 +56,20 @@ export const statuses = {
 
 const getTableColumns = ({
   onClickEdit,
+  onClickStart,
+  onClickComplete,
+  onClickCancel,
 }: {
-  onClickEdit?: (
+  onClickEdit: (
+    value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  ) => void
+  onClickStart: (
+    value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  ) => void
+  onClickComplete: (
+    value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  ) => void
+  onClickCancel: (
     value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
   ) => void
 }): ColumnDef<
@@ -146,14 +158,17 @@ const getTableColumns = ({
     ),
     cell: ({ row }) => {
       const status = (() => {
-        const { canceled, completed } = row.original
+        const { canceled, completed, started } = row.original
         if (canceled) {
           return statuses['canceled']
         }
         if (completed) {
           return statuses['completed']
         }
-        return statuses['inProgress']
+        if (started) {
+          return statuses['inProgress']
+        }
+        return statuses['pending']
       })()
 
       return (
@@ -165,20 +180,41 @@ const getTableColumns = ({
     },
     filterFn: (row, _, values) => {
       const status = (() => {
-        const { canceled, completed } = row.original
+        const { canceled, completed, started } = row.original
         if (canceled) {
           return 'canceled'
         }
         if (completed) {
           return 'completed'
         }
-        return 'inProgress'
+        if (started) {
+          return 'inProgress'
+        }
+        return 'pending'
       })()
 
       return values.includes(status)
     },
     meta: {
       label: 'Status',
+    },
+  },
+  {
+    id: 'nodeColdtag',
+    header: ({ column }) => (
+      <RouteCycleTableColumnHeader
+        column={column}
+        title={(column.columnDef.meta as { label: string }).label}
+      />
+    ),
+    cell: ({ row }) => {
+      const {
+        nodeColdtag: { identifier },
+      } = row.original
+      return <span>{identifier}</span>
+    },
+    meta: {
+      label: 'Node',
     },
   },
   {
@@ -291,6 +327,40 @@ const getTableColumns = ({
             >
               Edit
             </DropdownMenuItem>
+            {(() => {
+              if (row.original.completed || row.original.canceled) {
+                return undefined
+              }
+              if (row.original.started) {
+                return (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        onClickComplete?.(row.original)
+                      }}
+                    >
+                      Complete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        onClickCancel?.(row.original)
+                      }}
+                    >
+                      Cancel
+                    </DropdownMenuItem>
+                  </>
+                )
+              }
+              return (
+                <DropdownMenuItem
+                  onClick={() => {
+                    onClickStart?.(row.original)
+                  }}
+                >
+                  Start
+                </DropdownMenuItem>
+              )
+            })()}
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -300,10 +370,19 @@ const getTableColumns = ({
 
 const RouteCycleTable: React.FC<{
   items: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all']
-  onClickEdit?: (
+  onClickEdit: (
     value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
   ) => void
-}> = ({ items, onClickEdit }) => {
+  onClickStart: (
+    value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  ) => void
+  onClickComplete: (
+    value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  ) => void
+  onClickCancel: (
+    value: Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  ) => void
+}> = ({ items, onClickEdit, onClickStart, onClickComplete, onClickCancel }) => {
   const [columnFilters, onColumnFiltersChange] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, onColumnVisibilityChange] = React.useState<VisibilityState>({
     ownerName: false,
@@ -318,7 +397,12 @@ const RouteCycleTable: React.FC<{
 
   const table = useReactTable({
     data: items,
-    columns: getTableColumns({ onClickEdit }),
+    columns: getTableColumns({
+      onClickEdit,
+      onClickStart,
+      onClickComplete,
+      onClickCancel,
+    }),
     enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     getFacetedRowModel: getFacetedRowModel(),

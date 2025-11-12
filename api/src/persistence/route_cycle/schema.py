@@ -16,6 +16,7 @@ class RouteCycleSchema(BaseModel):
     destination_longitude: float | None
     temperature_alert_threshold: float | None
     humidity_alert_threshold: float | None
+    started: bool | None
     completed: bool | None
     canceled: bool | None
     created_time: datetime

@@ -187,6 +187,7 @@ class RouteCyclePersistence(BasePersistence):
         destination_longitude: float | None | MissingType = MISSING,
         temperature_alert_threshold: float | None | MissingType = MISSING,
         humidity_alert_threshold: float | None | MissingType = MISSING,
+        started: bool | None | MissingType = MISSING,
         completed: bool | None | MissingType = MISSING,
         canceled: bool | None | MissingType = MISSING,
     ) -> PersistedRouteCycle:
@@ -201,6 +202,7 @@ class RouteCyclePersistence(BasePersistence):
             or destination_longitude is not MISSING
             or temperature_alert_threshold is not MISSING
             or humidity_alert_threshold is not MISSING
+            or started is not MISSING
             or completed is not MISSING
             or canceled is not MISSING
         )
@@ -231,6 +233,8 @@ class RouteCyclePersistence(BasePersistence):
                 sql.add("temperature_alert_threshold", temperature_alert_threshold)
             if humidity_alert_threshold is not MISSING:
                 sql.add("humidity_alert_threshold", humidity_alert_threshold)
+            if started is not MISSING:
+                sql.add("started", started)
             if completed is not MISSING:
                 sql.add("completed", completed)
             if canceled is not MISSING:
