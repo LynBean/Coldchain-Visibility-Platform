@@ -154,6 +154,34 @@ class NodeColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def find_node_events_by_time_range(
+        self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
+    ) -> list[PersistedNodeColdtagEvent]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event
+                    WHERE node_coldtag_id = $1
+                    AND event_time >= $2
+                    AND ($3::timestamptz IS NULL OR event_time <= $3)
+                    """,
+                int(node_id),
+                dispatch_time,
+                completion_time,
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEvent]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEvent.construct_model(self._app, NodeColdtagEventSchema(**row))
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
     async def find_node_event_alert_impacts_by_node_id(
         self, node_id: str, /
     ) -> list[PersistedNodeColdtagEventAlertImpact]:
@@ -180,6 +208,36 @@ class NodeColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def find_node_event_alert_impacts_by_time_range(
+        self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
+    ) -> list[PersistedNodeColdtagEventAlertImpact]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertImpact]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event_alert_impact
+                    WHERE node_coldtag_id = $1
+                    AND event_time >= $2
+                    AND ($3::timestamptz IS NULL OR event_time <= $3)
+                    """,
+                int(node_id),
+                dispatch_time,
+                completion_time,
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEventAlertImpact]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEventAlertImpact.construct_model(
+                            self._app, NodeColdtagEventAlertImpactSchema(**row)
+                        )
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
     async def find_node_event_alert_liquids_by_node_id(
         self, node_id: str, /
     ) -> list[PersistedNodeColdtagEventAlertLiquid]:
@@ -190,6 +248,36 @@ class NodeColdtagPersistence(BasePersistence):
                     WHERE node_coldtag_id = $1
                     """,
                 int(node_id),
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEventAlertLiquid]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEventAlertLiquid.construct_model(
+                            self._app, NodeColdtagEventAlertLiquidSchema(**row)
+                        )
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
+    async def find_node_event_alert_liquids_by_time_range(
+        self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
+    ) -> list[PersistedNodeColdtagEventAlertLiquid]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertLiquid]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event_alert_liquid
+                    WHERE node_coldtag_id = $1
+                    AND event_time >= $2
+                    AND ($3::timestamptz IS NULL OR event_time <= $3)
+                    """,
+                int(node_id),
+                dispatch_time,
+                completion_time,
             )
 
             return cast(

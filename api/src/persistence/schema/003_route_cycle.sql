@@ -229,6 +229,35 @@ CREATE VIEW "route_cycle" AS (
     ),
     (
       SELECT
+        URC.TIME
+      FROM
+        "update_route_cycle" URC
+      WHERE
+        URC.ROUTE_CYCLE_ID = CRC.ID
+        AND URC.STARTED = TRUE
+      ORDER BY
+        URC.TIME ASC
+      LIMIT
+        1
+    ) AS "dispatch_time",
+    (
+      SELECT
+        URC.TIME
+      FROM
+        "update_route_cycle" URC
+      WHERE
+        URC.ROUTE_CYCLE_ID = CRC.ID
+        AND (
+          URC.COMPLETED = TRUE
+          OR URC.CANCELED = TRUE
+        )
+      ORDER BY
+        URC.TIME ASC
+      LIMIT
+        1
+    ) AS "completion_time",
+    (
+      SELECT
         URC.CANCELED
       FROM
         "update_route_cycle" URC

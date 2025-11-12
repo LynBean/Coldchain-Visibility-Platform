@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Awaitable
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -5,7 +6,16 @@ from typing import TYPE_CHECKING
 import strawberry
 
 from src.persistence.route_cycle import PersistedRouteCycle
-from src.route.resolve.node_coldtag import NodeColdtag, resolve_node_coldtag
+from src.route.resolve.node_coldtag import (
+    NodeColdtag,
+    NodeColdtagEvent,
+    NodeColdtagEventAlertImpact,
+    NodeColdtagEventAlertLiquid,
+    resolve_node_coldtag,
+    resolve_node_coldtag_event,
+    resolve_node_coldtag_event_alert_impact,
+    resolve_node_coldtag_event_alert_liquid,
+)
 
 if TYPE_CHECKING:
     from src.route import AppContext
@@ -34,6 +44,27 @@ class RouteCycle:
     started: bool
     completed: bool
     canceled: bool
+    dispatch_time: datetime | None
+    completion_time: datetime | None
+
+    _telemetry_events: strawberry.Private[Awaitable[list[NodeColdtagEvent]]]
+
+    @strawberry.field
+    async def telemetry_events(self) -> list[NodeColdtagEvent]:
+        return await self._telemetry_events
+
+    _alert_liquid_events: strawberry.Private[Awaitable[list[NodeColdtagEventAlertLiquid]]]
+
+    @strawberry.field
+    async def alert_liquid_events(self) -> list[NodeColdtagEventAlertLiquid]:
+        return await self._alert_liquid_events
+
+    _alert_impact_events: strawberry.Private[Awaitable[list[NodeColdtagEventAlertImpact]]]
+
+    @strawberry.field
+    async def alert_impact_events(self) -> list[NodeColdtagEventAlertImpact]:
+        return await self._alert_impact_events
+
     created_time: datetime
     updated_time: datetime
 
@@ -42,6 +73,22 @@ async def resolve_route_cycle(route_cycle: PersistedRouteCycle, /, info: strawbe
     async def __node_coldtag() -> NodeColdtag:
         node_coldtag = await route_cycle.node_coldtag
         return await resolve_node_coldtag(node_coldtag, info=info)
+
+    async def __telemetry_events() -> list[NodeColdtagEvent]:
+        persisted_events = await route_cycle.telemetry_events
+        return await asyncio.gather(*[resolve_node_coldtag_event(event, info=info) for event in persisted_events])
+
+    async def __alert_liquid_events() -> list[NodeColdtagEventAlertLiquid]:
+        persisted_events = await route_cycle.alert_liquid_events
+        return await asyncio.gather(
+            *[resolve_node_coldtag_event_alert_liquid(event, info=info) for event in persisted_events]
+        )
+
+    async def __alert_impact_events() -> list[NodeColdtagEventAlertImpact]:
+        persisted_events = await route_cycle.alert_impact_events
+        return await asyncio.gather(
+            *[resolve_node_coldtag_event_alert_impact(event, info=info) for event in persisted_events]
+        )
 
     return RouteCycle(
         id=strawberry.scalars.ID(route_cycle.id),
@@ -59,6 +106,11 @@ async def resolve_route_cycle(route_cycle: PersistedRouteCycle, /, info: strawbe
         started=route_cycle.started,
         completed=route_cycle.completed,
         canceled=route_cycle.canceled,
+        dispatch_time=route_cycle.dispatch_time,
+        completion_time=route_cycle.completion_time,
+        _telemetry_events=__telemetry_events(),
+        _alert_liquid_events=__alert_liquid_events(),
+        _alert_impact_events=__alert_impact_events(),
         created_time=route_cycle.created_time,
         updated_time=route_cycle.updated_time,
     )

@@ -19,5 +19,7 @@ class RouteCycleSchema(BaseModel):
     started: bool | None
     completed: bool | None
     canceled: bool | None
+    dispatch_time: datetime | None
+    completion_time: datetime | None
     created_time: datetime
     updated_time: datetime
