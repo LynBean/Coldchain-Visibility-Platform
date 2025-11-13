@@ -222,7 +222,7 @@ const RouteCyclePrintReport: React.FC<{
                 ({ id, temperature, eventTime, coordinate }, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{id}</TableCell>
-                    <TableCell>{`${temperature} °C`}</TableCell>
+                    <TableCell>{`${temperature.toLocaleString()} °C`}</TableCell>
                     <TableCell>
                       {new Date(eventTime).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -274,7 +274,7 @@ const RouteCyclePrintReport: React.FC<{
                 ({ id, humidity, eventTime, coordinate }, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{id}</TableCell>
-                    <TableCell>{humidity}</TableCell>
+                    <TableCell>{humidity.toLocaleString()}</TableCell>
                     <TableCell>
                       {new Date(eventTime).toLocaleDateString('en-US', {
                         year: 'numeric',
