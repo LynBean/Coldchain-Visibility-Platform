@@ -1,0 +1,139 @@
+import { Badge } from '@/components/ui/badge.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command.tsx'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx'
+import { Separator } from '@/components/ui/separator.tsx'
+import { cn } from '@/lib/utils.ts'
+import { Cvp_DashboardCycle_DisplayRouteCycleAllQuery } from '@/stores/graphql/generated.ts'
+import { Column } from '@tanstack/react-table'
+import { Check, PlusCircle } from 'lucide-react'
+import React from 'react'
+
+const RouteCycleTableFacetedFilter: React.FC<{
+  column?: Column<
+    Cvp_DashboardCycle_DisplayRouteCycleAllQuery['displayRouteCycle']['all'][number]
+  >
+  title?: string
+  options: {
+    label: string
+    value: string
+    icon?: React.ComponentType<{ className?: string }>
+  }[]
+  enableSearch?: boolean
+}> = ({ column, title, options, enableSearch = false }) => {
+  const facets = column?.columns.length ? column.getFacetedUniqueValues() : undefined
+  const selectedValues = new Set(column?.getFilterValue() as string[])
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 border-dashed">
+          <PlusCircle />
+          {title}
+          {selectedValues?.size > 0 && (
+            <>
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <Badge
+                variant="secondary"
+                className="rounded-sm px-1 font-normal lg:hidden"
+              >
+                {selectedValues.size}
+              </Badge>
+              <div className="hidden gap-1 lg:flex">
+                {selectedValues.size > 2 ? (
+                  <Badge variant="secondary" className="rounded-sm px-1 font-normal">
+                    {selectedValues.size} selected
+                  </Badge>
+                ) : (
+                  options
+                    .filter((option) => selectedValues.has(option.value))
+                    .map((option) => (
+                      <Badge
+                        variant="secondary"
+                        key={option.value}
+                        className="rounded-sm px-1 font-normal"
+                      >
+                        {option.label}
+                      </Badge>
+                    ))
+                )}
+              </div>
+            </>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0" align="start">
+        <Command>
+          {enableSearch && <CommandInput placeholder={title} />}
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => {
+                const isSelected = selectedValues.has(option.value)
+                return (
+                  <CommandItem
+                    key={option.value}
+                    onSelect={() => {
+                      if (isSelected) {
+                        selectedValues.delete(option.value)
+                      } else {
+                        selectedValues.add(option.value)
+                      }
+                      const filterValues = Array.from(selectedValues)
+                      column?.setFilterValue(
+                        filterValues.length ? filterValues : undefined
+                      )
+                    }}
+                  >
+                    <div
+                      className={cn(
+                        'flex size-4 items-center justify-center rounded-lg border',
+                        isSelected
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input [&_svg]:invisible'
+                      )}
+                    >
+                      <Check className="size-3.5 text-primary-foreground" />
+                    </div>
+                    {option.icon && (
+                      <option.icon className="size-4 text-muted-foreground" />
+                    )}
+                    <span>{option.label}</span>
+                    {facets?.get(option.value) && (
+                      <span className="ml-auto flex size-4 items-center justify-center font-mono text-xs text-muted-foreground">
+                        {facets.get(option.value)}
+                      </span>
+                    )}
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+            {selectedValues.size > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={() => column?.setFilterValue(undefined)}
+                    className="justify-center text-center"
+                  >
+                    Clear filters
+                  </CommandItem>
+                </CommandGroup>
+              </>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+export default RouteCycleTableFacetedFilter

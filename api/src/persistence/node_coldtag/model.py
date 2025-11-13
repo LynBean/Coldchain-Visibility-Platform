@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Awaitable
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -47,7 +48,7 @@ class PersistedNodeColdtagEvent(BaseModel):
         return PersistedNodeColdtagEvent(
             id=str(data.id),
             node_coldtag=__node_coldtag(),
-            core_coldtag=__core_coldtag(),
+            core_coldtag=asyncio.create_task(__core_coldtag()),
             temperature=data.temperature,
             humidity=data.humidity,
             core_coldtag_received_time=data.core_coldtag_received_time,
@@ -85,7 +86,7 @@ class PersistedNodeColdtagEventAlertLiquid(BaseModel):
         return PersistedNodeColdtagEventAlertLiquid(
             id=str(data.id),
             node_coldtag=__node_coldtag(),
-            core_coldtag=__core_coldtag(),
+            core_coldtag=asyncio.create_task(__core_coldtag()),
             core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,
@@ -121,7 +122,7 @@ class PersistedNodeColdtagEventAlertImpact(BaseModel):
         return PersistedNodeColdtagEventAlertImpact(
             id=str(data.id),
             node_coldtag=__node_coldtag(),
-            core_coldtag=__core_coldtag(),
+            core_coldtag=asyncio.create_task(__core_coldtag()),
             core_coldtag_received_time=data.core_coldtag_received_time,
             event_time=data.event_time,
             time=data.time,

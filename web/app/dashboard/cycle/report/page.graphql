@@ -1,0 +1,122 @@
+query CVP_DashboardCycleReport_DisplayRouteCycleAll {
+  displayRouteCycle {
+    all {
+      id
+      identifier
+      started
+      completed
+      canceled
+    }
+  }
+}
+
+query CVP_DashboardCycleReport_DisplayRouteCycleById($routeCycleId: ID!) {
+  displayRouteCycle {
+    byId(routeCycleId: $routeCycleId) {
+      id
+      nodeColdtag {
+        id
+        macAddress
+        identifier
+      }
+      identifier
+      description
+      ownerName
+      placedAt
+      departureCoordinate {
+        latitude
+        longitude
+      }
+      destinationCoordinate {
+        latitude
+        longitude
+      }
+      temperatureAlertThreshold
+      humidityAlertThreshold
+      started
+      completed
+      canceled
+      dispatchTime
+      completionTime
+      telemetryEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        temperature
+        humidity
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertLiquidEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertImpactEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertTemperatureEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        temperature
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertHumidityEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        humidity
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+    }
+  }
+}

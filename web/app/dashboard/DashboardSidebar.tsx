@@ -29,12 +29,14 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar.tsx'
 import {
+  ChartArea,
   ChartSpline,
   ChevronRight,
   Cpu,
   GalleryVerticalEnd,
   Moon,
   Sun,
+  Table,
   Target,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -62,7 +64,7 @@ const DashboardSidebarHeader: React.FC = () => {
   )
 }
 
-const DashboardSidebarContent: React.FC = () => {
+const DashboardAdminPanel: React.FC = () => {
   const router = useRouter()
   const { setOpenMobile } = useSidebar()
 
@@ -77,7 +79,7 @@ const DashboardSidebarContent: React.FC = () => {
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              router.replace('/dashboard')
+              router.push('/dashboard')
               setOpenMobile(false)
             }}
           >
@@ -88,14 +90,14 @@ const DashboardSidebarContent: React.FC = () => {
           </SidebarMenuButton>
         </SidebarMenuItem>
 
-        {/** Charts */}
+        {/** Telemetry */}
         <SidebarMenuItem>
           <SidebarMenuButton
             tooltip="telemetry"
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
-              router.replace('/dashboard/telemetry')
+              router.push('/dashboard/telemetry')
               setOpenMobile(false)
             }}
           >
@@ -125,7 +127,7 @@ const DashboardSidebarContent: React.FC = () => {
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
-                      router.replace('/dashboard/core')
+                      router.push('/dashboard/core')
                       setOpenMobile(false)
                     }}
                   >
@@ -139,7 +141,7 @@ const DashboardSidebarContent: React.FC = () => {
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
-                      router.replace('/dashboard/node')
+                      router.push('/dashboard/node')
                       setOpenMobile(false)
                     }}
                   >
@@ -157,6 +159,54 @@ const DashboardSidebarContent: React.FC = () => {
   )
 }
 
+const DashboardRouteCyclePanel: React.FC = () => {
+  const router = useRouter()
+  const { setOpenMobile } = useSidebar()
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Route Cycle</SidebarGroupLabel>
+      <SidebarMenu>
+        {/** Report */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            tooltip="report"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              router.push('/dashboard/cycle/report')
+              setOpenMobile(false)
+            }}
+          >
+            <ChartArea />
+            <a href="/dashboard/cycle/report">
+              <span>Report</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+
+        {/** Cycles */}
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            tooltip="cycles"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              router.push('/dashboard/cycle')
+              setOpenMobile(false)
+            }}
+          >
+            <Table />
+            <a href="/dashboard/cycle">
+              <span>Cycles</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+}
+
 const DashboardSidebar: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { setTheme } = useTheme()
 
@@ -167,7 +217,8 @@ const DashboardSidebar: React.FC<React.PropsWithChildren> = ({ children }) => {
           <DashboardSidebarHeader />
         </SidebarHeader>
         <SidebarContent>
-          <DashboardSidebarContent />
+          <DashboardAdminPanel />
+          <DashboardRouteCyclePanel />
         </SidebarContent>
         <SidebarRail />
       </Sidebar>

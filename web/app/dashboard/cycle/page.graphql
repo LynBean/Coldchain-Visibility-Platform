@@ -1,0 +1,249 @@
+query CVP_DashboardCycle_DisplayRouteCycleAll {
+  displayRouteCycle {
+    all {
+      id
+      nodeColdtag {
+        id
+        identifier
+      }
+      identifier
+      description
+      ownerName
+      placedAt
+      departureCoordinate {
+        latitude
+        longitude
+      }
+      destinationCoordinate {
+        latitude
+        longitude
+      }
+      temperatureAlertThreshold
+      humidityAlertThreshold
+      started
+      completed
+      canceled
+    }
+  }
+}
+
+query CVP_DashboardCycle_DisplayRouteCycleById($routeCycleId: ID!) {
+  displayRouteCycle {
+    byId(routeCycleId: $routeCycleId) {
+      id
+      nodeColdtag {
+        id
+        identifier
+      }
+      identifier
+      description
+      ownerName
+      placedAt
+      departureCoordinate {
+        latitude
+        longitude
+      }
+      destinationCoordinate {
+        latitude
+        longitude
+      }
+      temperatureAlertThreshold
+      humidityAlertThreshold
+      started
+      completed
+      canceled
+    }
+  }
+}
+
+query CVP_DashboardCycle_DisplayNodeColdtagAll {
+  displayNodeColdtag {
+    allAvailableForRouteCycle {
+      id
+      identifier
+    }
+  }
+}
+
+mutation CVP_DashboardCycle_CreateRouteCycle(
+  $nodeColdtagId: ID!
+  $identifier: String
+  $description: String
+  $ownerName: String
+  $placedAt: String
+  $departureLatitude: Float
+  $departureLongitude: Float
+  $destinationLatitude: Float
+  $destinationLongitude: Float
+  $temperatureAlertThreshold: Float
+  $humidityAlertThreshold: Float
+) {
+  createRouteCycle(
+    nodeColdtagId: $nodeColdtagId
+    identifier: $identifier
+    description: $description
+    ownerName: $ownerName
+    placedAt: $placedAt
+    departureLatitude: $departureLatitude
+    departureLongitude: $departureLongitude
+    destinationLatitude: $destinationLatitude
+    destinationLongitude: $destinationLongitude
+    temperatureAlertThreshold: $temperatureAlertThreshold
+    humidityAlertThreshold: $humidityAlertThreshold
+  ) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_UpdateRouteCycle(
+  $routeCycleId: ID!
+  $identifier: String
+  $description: String
+  $ownerName: String
+  $placedAt: String
+  $departureLatitude: Float
+  $departureLongitude: Float
+  $destinationLatitude: Float
+  $destinationLongitude: Float
+  $temperatureAlertThreshold: Float
+  $humidityAlertThreshold: Float
+) {
+  updateRouteCycle(
+    routeCycleId: $routeCycleId
+    identifier: $identifier
+    description: $description
+    ownerName: $ownerName
+    placedAt: $placedAt
+    departureLatitude: $departureLatitude
+    departureLongitude: $departureLongitude
+    destinationLatitude: $destinationLatitude
+    destinationLongitude: $destinationLongitude
+    temperatureAlertThreshold: $temperatureAlertThreshold
+    humidityAlertThreshold: $humidityAlertThreshold
+  ) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_StartRouteCycle($routeCycleId: ID!) {
+  startRouteCycle(routeCycleId: $routeCycleId) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_CompleteRouteCycle($routeCycleId: ID!) {
+  completeRouteCycle(routeCycleId: $routeCycleId) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}
+
+mutation CVP_DashboardCycle_CancelRouteCycle($routeCycleId: ID!) {
+  cancelRouteCycle(routeCycleId: $routeCycleId) {
+    id
+    nodeColdtag {
+      id
+      identifier
+    }
+    identifier
+    description
+    ownerName
+    placedAt
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
+    temperatureAlertThreshold
+    humidityAlertThreshold
+    started
+    completed
+    canceled
+  }
+}

@@ -73,8 +73,55 @@ class NodeColdtagPersistence(BasePersistence):
         async def __query(client: PgConnection) -> list[NodeColdtagSchema]:
             rows = await client.fetch(
                 """
-                    SELECT * FROM node_coldtag
-                    """
+                SELECT * FROM node_coldtag
+                """
+            )
+            return [NodeColdtagSchema(**row) for row in rows]
+
+        node_coldtag_schemas = await self._commit(__query)
+        return cast(
+            "list[PersistedNodeColdtag]",
+            await asyncio.gather(
+                *[PersistedNodeColdtag.construct_model(self._app, schema) for schema in node_coldtag_schemas]
+            ),
+        )
+
+    async def find_nodes_available_for_route_cycle(self) -> list[PersistedNodeColdtag]:
+        async def __query(client: PgConnection) -> list[NodeColdtagSchema]:
+            rows = await client.fetch(
+                """
+                SELECT
+                  NC.*
+                FROM
+                  "node_coldtag" NC
+                WHERE
+                  NOT EXISTS (
+                    SELECT
+                      1
+                    FROM
+                      "route_cycle" RC
+                    WHERE
+                      RC.NODE_COLDTAG_ID = NC.ID
+                      AND (
+                        RC.COMPLETED IS DISTINCT FROM TRUE
+                        AND RC.CANCELED IS DISTINCT FROM TRUE
+                      )
+                      AND RC.ID = (
+                        SELECT
+                          RC2.ID
+                        FROM
+                          "route_cycle" RC2
+                        WHERE
+                          RC2.NODE_COLDTAG_ID = NC.ID
+                        ORDER BY
+                          RC2.ID DESC
+                        LIMIT
+                          1
+                      )
+                  )
+                ORDER BY
+                  NC.ID;
+                """
             )
             return [NodeColdtagSchema(**row) for row in rows]
 
@@ -154,6 +201,34 @@ class NodeColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def find_node_events_by_time_range(
+        self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
+    ) -> list[PersistedNodeColdtagEvent]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event
+                    WHERE node_coldtag_id = $1
+                    AND event_time >= $2
+                    AND ($3::timestamptz IS NULL OR event_time <= $3)
+                    """,
+                int(node_id),
+                dispatch_time,
+                completion_time,
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEvent]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEvent.construct_model(self._app, NodeColdtagEventSchema(**row))
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
     async def find_node_event_alert_impacts_by_node_id(
         self, node_id: str, /
     ) -> list[PersistedNodeColdtagEventAlertImpact]:
@@ -180,6 +255,36 @@ class NodeColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def find_node_event_alert_impacts_by_time_range(
+        self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
+    ) -> list[PersistedNodeColdtagEventAlertImpact]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertImpact]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event_alert_impact
+                    WHERE node_coldtag_id = $1
+                    AND event_time >= $2
+                    AND ($3::timestamptz IS NULL OR event_time <= $3)
+                    """,
+                int(node_id),
+                dispatch_time,
+                completion_time,
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEventAlertImpact]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEventAlertImpact.construct_model(
+                            self._app, NodeColdtagEventAlertImpactSchema(**row)
+                        )
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
     async def find_node_event_alert_liquids_by_node_id(
         self, node_id: str, /
     ) -> list[PersistedNodeColdtagEventAlertLiquid]:
@@ -190,6 +295,36 @@ class NodeColdtagPersistence(BasePersistence):
                     WHERE node_coldtag_id = $1
                     """,
                 int(node_id),
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEventAlertLiquid]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEventAlertLiquid.construct_model(
+                            self._app, NodeColdtagEventAlertLiquidSchema(**row)
+                        )
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
+    async def find_node_event_alert_liquids_by_time_range(
+        self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
+    ) -> list[PersistedNodeColdtagEventAlertLiquid]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertLiquid]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event_alert_liquid
+                    WHERE node_coldtag_id = $1
+                    AND event_time >= $2
+                    AND ($3::timestamptz IS NULL OR event_time <= $3)
+                    """,
+                int(node_id),
+                dispatch_time,
+                completion_time,
             )
 
             return cast(

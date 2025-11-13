@@ -45,6 +45,7 @@ const DeviceCreateSheetTemplate: React.FC<
               toast.promise(onContinue(), {
                 loading: 'Creating device...',
                 success: 'Device created successfully.',
+                error: 'Device failed to create.',
               })
             }}
           >

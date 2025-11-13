@@ -56,8 +56,8 @@ class PersistedCoreColdtag(BaseModel):
     @staticmethod
     async def construct_model(app: FastAPI, data: CoreColdtagSchema, /) -> "PersistedCoreColdtag":
         async def __telemetry_events() -> list["PersistedCoreColdtagEvent"]:
-            core_coldtag_event_persistence: CoreColdtagPersistence = app.extra["core_coldtag_event_persistence"]
-            events = await core_coldtag_event_persistence.find_core_events_by_core_id(str(data.id))
+            core_coldtag_persistence: CoreColdtagPersistence = app.extra["core_coldtag_persistence"]
+            events = await core_coldtag_persistence.find_core_events_by_core_id(str(data.id))
             return sorted(events, key=lambda x: x.event_time, reverse=True)
 
         return PersistedCoreColdtag(

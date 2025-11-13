@@ -13,6 +13,7 @@ from supabase import AClient as SupabaseClient
 
 from src.persistence.core_coldtag import CoreColdtagPersistence
 from src.persistence.node_coldtag import NodeColdtagPersistence
+from src.persistence.route_cycle import RouteCyclePersistence
 from src.route.mutate import MutationSchema
 from src.route.query import QuerySchema
 
@@ -52,6 +53,10 @@ class AppContext(BaseContext):
     @cached_property
     def node_coldtag_persistence(self) -> NodeColdtagPersistence:
         return self.app.extra["node_coldtag_persistence"]
+
+    @cached_property
+    def route_cycle_persistence(self) -> RouteCyclePersistence:
+        return self.app.extra["route_cycle_persistence"]
 
 
 def create_context(app: FastAPI, /, env: Literal["production", "development"]) -> Callable[..., AppContext]:
