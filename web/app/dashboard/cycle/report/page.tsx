@@ -49,6 +49,7 @@ import {
 import React from 'react'
 import NodeAlertEventChart from '../../telemetry/NodeAlertEventChart.tsx'
 import NodeTelemetryEventChart from '../../telemetry/NodeTelemetryEventChart.tsx'
+import RouteCyclePrintReport from '../RouteCyclePrintReport.tsx'
 
 const DashboardChartsPage = () => {
   const [, { catchError }] = useErrorState()
@@ -291,10 +292,12 @@ const DashboardChartsPage = () => {
         {state.selected && (
           <motion.div
             key="cycle-selected-group"
+            className="flex flex-row flex-nowrap gap-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
+            <RouteCyclePrintReport data={state.current} />
             <RouteCycleSelectGroup />
           </motion.div>
         )}
