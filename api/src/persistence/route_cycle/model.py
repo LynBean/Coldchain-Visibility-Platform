@@ -1,9 +1,11 @@
+import asyncio
 from collections.abc import Awaitable
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
+from src.persistence.core_coldtag import PersistedCoreColdtag
 from src.persistence.node_coldtag import (
     NodeColdtagPersistence,
     PersistedNodeColdtag,
@@ -15,6 +17,60 @@ from src.persistence.node_coldtag import (
 from .schema import (
     RouteCycleSchema,
 )
+
+
+class PersistedRouteCycleAlertTemperatureEvent(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    id: str
+    node_coldtag: Awaitable["PersistedNodeColdtag"]
+    core_coldtag: Awaitable[PersistedCoreColdtag]
+    temperature: float
+    core_coldtag_received_time: datetime
+    event_time: datetime
+    time: datetime
+
+    @staticmethod
+    async def construct_model(
+        app: FastAPI, data: PersistedNodeColdtagEvent, /
+    ) -> "PersistedRouteCycleAlertTemperatureEvent":
+        assert data.temperature is not None
+        return PersistedRouteCycleAlertTemperatureEvent(
+            id=data.id,
+            node_coldtag=data.node_coldtag,
+            core_coldtag=data.core_coldtag,
+            temperature=data.temperature,
+            core_coldtag_received_time=data.core_coldtag_received_time,
+            event_time=data.event_time,
+            time=data.time,
+        )
+
+
+class PersistedRouteCycleAlertHumidityEvent(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    id: str
+    node_coldtag: Awaitable["PersistedNodeColdtag"]
+    core_coldtag: Awaitable[PersistedCoreColdtag]
+    humidity: float
+    core_coldtag_received_time: datetime
+    event_time: datetime
+    time: datetime
+
+    @staticmethod
+    async def construct_model(
+        app: FastAPI, data: PersistedNodeColdtagEvent, /
+    ) -> "PersistedRouteCycleAlertHumidityEvent":
+        assert data.humidity is not None
+        return PersistedRouteCycleAlertHumidityEvent(
+            id=data.id,
+            node_coldtag=data.node_coldtag,
+            core_coldtag=data.core_coldtag,
+            humidity=data.humidity,
+            core_coldtag_received_time=data.core_coldtag_received_time,
+            event_time=data.event_time,
+            time=data.time,
+        )
 
 
 class PersistedRouteCycle(BaseModel):
@@ -40,6 +96,8 @@ class PersistedRouteCycle(BaseModel):
     telemetry_events: Awaitable[list[PersistedNodeColdtagEvent]]
     alert_liquid_events: Awaitable[list[PersistedNodeColdtagEventAlertLiquid]]
     alert_impact_events: Awaitable[list[PersistedNodeColdtagEventAlertImpact]]
+    alert_temperature_events: Awaitable[list[PersistedRouteCycleAlertTemperatureEvent]]
+    alert_humidity_events: Awaitable[list[PersistedRouteCycleAlertHumidityEvent]]
     created_time: datetime
     updated_time: datetime
 
@@ -80,6 +138,32 @@ class PersistedRouteCycle(BaseModel):
                 str(data.node_coldtag_id), dispatch_time=data.dispatch_time, completion_time=data.completion_time
             )
 
+        async def __alert_temperature_events() -> list[PersistedRouteCycleAlertTemperatureEvent]:
+            if data.temperature_alert_threshold is None:
+                return []
+
+            events = await __telemetry_events()
+            return await asyncio.gather(
+                *[
+                    PersistedRouteCycleAlertTemperatureEvent.construct_model(app, event)
+                    for event in events
+                    if event.temperature is not None and event.temperature >= data.temperature_alert_threshold
+                ]
+            )
+
+        async def __alert_humidity_events() -> list[PersistedRouteCycleAlertHumidityEvent]:
+            if data.humidity_alert_threshold is None:
+                return []
+
+            events = await __telemetry_events()
+            return await asyncio.gather(
+                *[
+                    PersistedRouteCycleAlertHumidityEvent.construct_model(app, event)
+                    for event in events
+                    if event.humidity is not None and event.humidity >= data.humidity_alert_threshold
+                ]
+            )
+
         return PersistedRouteCycle(
             id=str(data.id),
             node_coldtag=__node_coldtag(),
@@ -101,6 +185,8 @@ class PersistedRouteCycle(BaseModel):
             telemetry_events=__telemetry_events(),
             alert_liquid_events=__alert_liquid_events(),
             alert_impact_events=__alert_impact_events(),
+            alert_temperature_events=__alert_temperature_events(),
+            alert_humidity_events=__alert_humidity_events(),
             created_time=data.created_time,
             updated_time=data.updated_time,
         )

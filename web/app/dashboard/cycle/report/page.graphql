@@ -85,6 +85,38 @@ query CVP_DashboardCycleReport_DisplayRouteCycleById($routeCycleId: ID!) {
         eventTime
         time
       }
+      alertTemperatureEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        temperature
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
+      alertHumidityEvents {
+        id
+        coreColdtag {
+          id
+          identifier
+          macAddress
+        }
+        humidity
+        coordinate {
+          latitude
+          longitude
+        }
+        coreColdtagReceivedTime
+        eventTime
+        time
+      }
     }
   }
 }

@@ -49,7 +49,8 @@ import {
 import React from 'react'
 import NodeAlertEventChart from '../../telemetry/NodeAlertEventChart.tsx'
 import NodeTelemetryEventChart from '../../telemetry/NodeTelemetryEventChart.tsx'
-import RouteCyclePrintReport from '../RouteCyclePrintReport.tsx'
+import RouteCycleAlertEventChart from './RouteCycleAlertEventChart.tsx'
+import RouteCyclePrintReport from './RouteCyclePrintReport.tsx'
 
 const DashboardChartsPage = () => {
   const [, { catchError }] = useErrorState()
@@ -433,9 +434,29 @@ const DashboardChartsPage = () => {
             <>
               <RouteCycleInfo />
 
-              {state.current.telemetryEvents.length > 0 && (
+              {[
+                ...state.current.alertTemperatureEvents,
+                ...state.current.alertHumidityEvents,
+              ].length > 0 && (
                 <motion.div
                   key="chart-cycle"
+                  className="w-full pt-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <RouteCycleAlertEventChart
+                    events={[
+                      ...state.current.alertTemperatureEvents,
+                      ...state.current.alertHumidityEvents,
+                    ]}
+                  />
+                </motion.div>
+              )}
+
+              {state.current.telemetryEvents.length > 0 && (
+                <motion.div
+                  key="chart-cycle-2"
                   className="w-full pt-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -448,7 +469,7 @@ const DashboardChartsPage = () => {
               {[...state.current.alertLiquidEvents, ...state.current.alertImpactEvents]
                 .length > 0 && (
                 <motion.div
-                  key="chart-cycle-2"
+                  key="chart-cycle-3"
                   className="w-full pt-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
