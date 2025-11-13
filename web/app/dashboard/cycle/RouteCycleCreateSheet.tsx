@@ -265,7 +265,7 @@ const RouteCycleCreateSheet: React.FC<{
                 switch (attr.type) {
                   case 'select': {
                     return (
-                      <Select disabled={attr.loading}>
+                      <Select disabled={attr.loading} onValueChange={onChange}>
                         <SelectTrigger>
                           {attr.loading && <Spinner />}
                           <SelectValue placeholder={attr.placeholder} />
