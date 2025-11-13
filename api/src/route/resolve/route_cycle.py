@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import strawberry
 
 from src.persistence.route_cycle import PersistedRouteCycle
+from src.route.resolve.coordinate import Coordinate
 from src.route.resolve.node_coldtag import (
     NodeColdtag,
     NodeColdtagEvent,
@@ -35,10 +36,8 @@ class RouteCycle:
     description: str | None
     owner_name: str | None
     placed_at: str | None
-    departure_latitude: float | None
-    departure_longitude: float | None
-    destination_latitude: float | None
-    destination_longitude: float | None
+    departure_coordinate: Coordinate | None
+    destination_coordinate: Coordinate | None
     temperature_alert_threshold: float | None
     humidity_alert_threshold: float | None
     started: bool
@@ -90,6 +89,17 @@ async def resolve_route_cycle(route_cycle: PersistedRouteCycle, /, info: strawbe
             *[resolve_node_coldtag_event_alert_impact(event, info=info) for event in persisted_events]
         )
 
+    departure_coordinate = (
+        Coordinate(latitude=route_cycle.departure_latitude, longitude=route_cycle.departure_longitude)
+        if route_cycle.departure_latitude is not None and route_cycle.departure_longitude is not None
+        else None
+    )
+    destination_coordinate = (
+        Coordinate(latitude=route_cycle.destination_latitude, longitude=route_cycle.destination_longitude)
+        if route_cycle.destination_latitude is not None and route_cycle.destination_longitude is not None
+        else None
+    )
+
     return RouteCycle(
         id=strawberry.scalars.ID(route_cycle.id),
         _node_coldtag=__node_coldtag(),
@@ -97,10 +107,8 @@ async def resolve_route_cycle(route_cycle: PersistedRouteCycle, /, info: strawbe
         description=route_cycle.description,
         owner_name=route_cycle.owner_name,
         placed_at=route_cycle.placed_at,
-        departure_latitude=route_cycle.departure_latitude,
-        departure_longitude=route_cycle.departure_longitude,
-        destination_latitude=route_cycle.destination_latitude,
-        destination_longitude=route_cycle.destination_longitude,
+        departure_coordinate=departure_coordinate,
+        destination_coordinate=destination_coordinate,
         temperature_alert_threshold=route_cycle.temperature_alert_threshold,
         humidity_alert_threshold=route_cycle.humidity_alert_threshold,
         started=route_cycle.started,

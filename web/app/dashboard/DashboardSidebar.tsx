@@ -29,12 +29,14 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar.tsx'
 import {
+  ChartArea,
   ChartSpline,
   ChevronRight,
   Cpu,
   GalleryVerticalEnd,
   Moon,
   Sun,
+  Table,
   Target,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -163,7 +165,7 @@ const DashboardRouteCyclePanel: React.FC = () => {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>RouteCycle</SidebarGroupLabel>
+      <SidebarGroupLabel>Route Cycle</SidebarGroupLabel>
       <SidebarMenu>
         {/** Report */}
         <SidebarMenuItem>
@@ -176,17 +178,17 @@ const DashboardRouteCyclePanel: React.FC = () => {
               setOpenMobile(false)
             }}
           >
-            <ChartSpline />
+            <ChartArea />
             <a href="/dashboard/cycle/report">
               <span>Report</span>
             </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
 
-        {/** View all */}
+        {/** Cycles */}
         <SidebarMenuItem>
           <SidebarMenuButton
-            tooltip="all"
+            tooltip="cycles"
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
@@ -194,7 +196,7 @@ const DashboardRouteCyclePanel: React.FC = () => {
               setOpenMobile(false)
             }}
           >
-            <Target />
+            <Table />
             <a href="/dashboard/cycle">
               <span>Cycles</span>
             </a>

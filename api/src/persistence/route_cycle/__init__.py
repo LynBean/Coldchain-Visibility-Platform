@@ -76,6 +76,7 @@ class RouteCyclePersistence(BasePersistence):
                     """
                     SELECT * FROM route_cycle
                     WHERE node_coldtag_id = $1
+                    ORDER BY id DESC
                     LIMIT 1
                     """,
                     int(node_id),

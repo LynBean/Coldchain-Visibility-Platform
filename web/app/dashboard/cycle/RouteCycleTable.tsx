@@ -250,10 +250,10 @@ const getTableColumns = ({
       />
     ),
     cell: ({ row }) => {
-      const { departureLatitude, departureLongitude } = row.original
+      const { departureCoordinate } = row.original
       return (
         <span>
-          {departureLatitude}, {departureLongitude}
+          {departureCoordinate?.latitude}, {departureCoordinate?.longitude}
         </span>
       )
     },
@@ -270,10 +270,10 @@ const getTableColumns = ({
       />
     ),
     cell: ({ row }) => {
-      const { destinationLatitude, destinationLongitude } = row.original
+      const { destinationCoordinate } = row.original
       return (
         <span>
-          {destinationLatitude}, {destinationLongitude}
+          {destinationCoordinate?.latitude}, {destinationCoordinate?.longitude}
         </span>
       )
     },

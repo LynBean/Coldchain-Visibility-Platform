@@ -10,10 +10,14 @@ query CVP_DashboardCycle_DisplayRouteCycleAll {
       description
       ownerName
       placedAt
-      departureLatitude
-      departureLongitude
-      destinationLatitude
-      destinationLongitude
+      departureCoordinate {
+        latitude
+        longitude
+      }
+      destinationCoordinate {
+        latitude
+        longitude
+      }
       temperatureAlertThreshold
       humidityAlertThreshold
       started
@@ -35,10 +39,14 @@ query CVP_DashboardCycle_DisplayRouteCycleById($routeCycleId: ID!) {
       description
       ownerName
       placedAt
-      departureLatitude
-      departureLongitude
-      destinationLatitude
-      destinationLongitude
+      departureCoordinate {
+        latitude
+        longitude
+      }
+      destinationCoordinate {
+        latitude
+        longitude
+      }
       temperatureAlertThreshold
       humidityAlertThreshold
       started
@@ -83,10 +91,14 @@ mutation CVP_DashboardCycle_CreateRouteCycle(
     description
     ownerName
     placedAt
-    departureLatitude
-    departureLongitude
-    destinationLatitude
-    destinationLongitude
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
     temperatureAlertThreshold
     humidityAlertThreshold
     started
@@ -130,10 +142,14 @@ mutation CVP_DashboardCycle_UpdateRouteCycle(
     description
     ownerName
     placedAt
-    departureLatitude
-    departureLongitude
-    destinationLatitude
-    destinationLongitude
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
     temperatureAlertThreshold
     humidityAlertThreshold
     started
@@ -153,10 +169,14 @@ mutation CVP_DashboardCycle_StartRouteCycle($routeCycleId: ID!) {
     description
     ownerName
     placedAt
-    departureLatitude
-    departureLongitude
-    destinationLatitude
-    destinationLongitude
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
     temperatureAlertThreshold
     humidityAlertThreshold
     started
@@ -176,10 +196,14 @@ mutation CVP_DashboardCycle_CompleteRouteCycle($routeCycleId: ID!) {
     description
     ownerName
     placedAt
-    departureLatitude
-    departureLongitude
-    destinationLatitude
-    destinationLongitude
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
     temperatureAlertThreshold
     humidityAlertThreshold
     started
@@ -199,10 +223,14 @@ mutation CVP_DashboardCycle_CancelRouteCycle($routeCycleId: ID!) {
     description
     ownerName
     placedAt
-    departureLatitude
-    departureLongitude
-    destinationLatitude
-    destinationLongitude
+    departureCoordinate {
+      latitude
+      longitude
+    }
+    destinationCoordinate {
+      latitude
+      longitude
+    }
     temperatureAlertThreshold
     humidityAlertThreshold
     started
