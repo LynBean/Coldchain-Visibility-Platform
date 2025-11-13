@@ -31,7 +31,11 @@ const RouteCyclePrintReport: React.FC<{
 
   return (
     <div>
-      <Button className="flex flex-row items-center" onClick={onPrint}>
+      <Button
+        className="flex flex-row items-center"
+        disabled={data == null}
+        onClick={onPrint}
+      >
         <SquareArrowOutUpRight />
         Export as PDF
       </Button>

@@ -87,6 +87,7 @@ const DashboardChartsPage = () => {
   const debounceRouteCycleIdRef = React.useRef<string | null>(null)
 
   React.useEffect(() => {
+    setState((state) => ({ ...state, current: undefined }))
     if (!state.selected?.started) {
       return
     }
