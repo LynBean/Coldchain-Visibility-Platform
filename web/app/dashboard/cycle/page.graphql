@@ -56,6 +56,15 @@ query CVP_DashboardCycle_DisplayRouteCycleById($routeCycleId: ID!) {
   }
 }
 
+query CVP_DashboardCycle_DisplayNodeColdtagAll {
+  displayNodeColdtag {
+    allAvailableForRouteCycle {
+      id
+      identifier
+    }
+  }
+}
+
 mutation CVP_DashboardCycle_CreateRouteCycle(
   $nodeColdtagId: ID!
   $identifier: String

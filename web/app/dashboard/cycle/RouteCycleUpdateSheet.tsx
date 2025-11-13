@@ -11,6 +11,16 @@ import {
 import InputAlert from '@/components/ui/input-alert.tsx'
 import { Input } from '@/components/ui/input.tsx'
 import { Label } from '@/components/ui/label.tsx'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select.tsx'
+import { Spinner } from '@/components/ui/spinner.tsx'
 import { useErrorState } from '@/stores/error.tsx'
 import {
   Cvp_DashboardCycle_DisplayRouteCycleAllQuery,
@@ -192,7 +202,7 @@ const RouteCycleUpdateSheet: React.FC<{
           {(
             [
               {
-                label: 'identifier',
+                label: 'Title',
                 value: state.formValues.identifier,
                 onChange: (value) => {
                   setFormValues('identifier', value)
@@ -200,7 +210,7 @@ const RouteCycleUpdateSheet: React.FC<{
                 error: state.formErrors.identifier,
               },
               {
-                label: 'description',
+                label: 'Description',
                 value: state.formValues.description,
                 onChange: (value) => {
                   setFormValues('description', value)
@@ -208,7 +218,7 @@ const RouteCycleUpdateSheet: React.FC<{
                 error: state.formErrors.description,
               },
               {
-                label: 'ownerName',
+                label: 'Client',
                 value: state.formValues.ownerName,
                 onChange: (value) => {
                   setFormValues('ownerName', value)
@@ -216,7 +226,7 @@ const RouteCycleUpdateSheet: React.FC<{
                 error: state.formErrors.ownerName,
               },
               {
-                label: 'placedAt',
+                label: 'Placing at',
                 value: state.formValues.placedAt,
                 onChange: (value) => {
                   setFormValues('placedAt', value)
@@ -224,72 +234,118 @@ const RouteCycleUpdateSheet: React.FC<{
                 error: state.formErrors.placedAt,
               },
               {
-                label: 'departureLatitude',
+                label: 'Departure latitude',
                 value: state.formValues.departureLatitude,
+                inputType: 'number',
                 onChange: (value) => {
                   setFormValues('departureLatitude', parseFloat(value))
                 },
                 error: state.formErrors.departureLatitude,
               },
               {
-                label: 'departureLongitude',
+                label: 'Departure longitude',
                 value: state.formValues.departureLongitude,
+                inputType: 'number',
                 onChange: (value) => {
                   setFormValues('departureLongitude', parseFloat(value))
                 },
                 error: state.formErrors.departureLongitude,
               },
               {
-                label: 'destinationLatitude',
+                label: 'Destination latitude',
                 value: state.formValues.destinationLatitude,
+                inputType: 'number',
                 onChange: (value) => {
                   setFormValues('destinationLatitude', parseFloat(value))
                 },
                 error: state.formErrors.destinationLatitude,
               },
               {
-                label: 'destinationLongitude',
+                label: 'Destination longitude',
                 value: state.formValues.destinationLongitude,
+                inputType: 'number',
                 onChange: (value) => {
                   setFormValues('destinationLongitude', parseFloat(value))
                 },
                 error: state.formErrors.destinationLongitude,
               },
               {
-                label: 'temperatureAlertThreshold',
+                label: 'Max Temp. (°C)',
                 value: state.formValues.temperatureAlertThreshold,
+                inputType: 'number',
                 onChange: (value) => {
                   setFormValues('temperatureAlertThreshold', parseFloat(value))
                 },
                 error: state.formErrors.temperatureAlertThreshold,
               },
               {
-                label: 'humidityAlertThreshold',
+                label: 'Max Humid.',
                 value: state.formValues.humidityAlertThreshold,
+                inputType: 'number',
                 onChange: (value) => {
                   setFormValues('humidityAlertThreshold', parseFloat(value))
                 },
                 error: state.formErrors.humidityAlertThreshold,
               },
-            ] as {
+            ] as ((
+              | {
+                  type: 'input'
+                  value: string | undefined
+                  inputType: React.HTMLInputTypeAttribute
+                }
+              | {
+                  type: 'select'
+                  loading: boolean
+                  placeholder: string
+                  values: { label: string; value: string }[] | undefined
+                }
+            ) & {
               label: string
-              value: string | undefined
-              type: React.HTMLInputTypeAttribute
               onChange: (value: string) => void
               error: string | undefined
-            }[]
-          ).map(({ label, value, type = 'text', onChange, error }, index) => (
+            })[]
+          ).map(({ label, onChange, error, ...attr }, index) => (
             <div key={index} className="grid gap-3">
               <Label htmlFor={label}>{label}</Label>
-              <Input
-                id={label}
-                disabled={state.loading}
-                value={value}
-                type={type}
-                onChange={(event) => {
-                  onChange(event.currentTarget.value)
-                }}
-              />
+              {(() => {
+                switch (attr.type) {
+                  case 'select': {
+                    return (
+                      <Select disabled={attr.loading}>
+                        <SelectTrigger>
+                          {attr.loading && <Spinner />}
+                          <SelectValue placeholder={attr.placeholder} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>{label}</SelectLabel>
+                            {attr.values?.map(({ label, value }, index) => (
+                              <SelectItem key={index} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )
+                  }
+
+                  default:
+                  case 'input': {
+                    return (
+                      <Input
+                        id={label}
+                        disabled={state.loading}
+                        value={attr.value}
+                        type={attr.inputType}
+                        onChange={(event) => {
+                          onChange(event.currentTarget.value)
+                        }}
+                      />
+                    )
+                  }
+                }
+              })()}
               <InputAlert open={error != null} title={error} />
             </div>
           ))}
@@ -300,8 +356,9 @@ const RouteCycleUpdateSheet: React.FC<{
             disabled={state.loading}
             onClick={() => {
               toast.promise(onContinue(), {
-                loading: 'Updating device...',
-                success: 'Device updated successfully.',
+                loading: 'Updating route cycle...',
+                success: 'Route cycle updated successfully.',
+                error: 'Route cycle failed to update.',
               })
             }}
           >

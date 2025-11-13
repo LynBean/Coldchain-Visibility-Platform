@@ -46,6 +46,7 @@ const DeviceUpdateSheetTemplate: React.FC<
               toast.promise(onContinue(), {
                 loading: 'Updating device...',
                 success: 'Device updated successfully.',
+                error: 'Device failed to update.',
               })
             }}
           >

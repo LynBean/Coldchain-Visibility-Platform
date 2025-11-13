@@ -25,6 +25,15 @@ class NodeColdtagDisplay:
             )
 
         @strawberry.field
+        async def all_available_for_route_cycle(self, info: Info["AppContext"]) -> list[NodeColdtag]:
+            node_coldtag_persistence = info.context.node_coldtag_persistence
+            persisted_nodes = await node_coldtag_persistence.find_nodes_available_for_route_cycle()
+            return cast(
+                "list[NodeColdtag]",
+                await asyncio.gather(*[resolve_node_coldtag(node, info=info) for node in persisted_nodes]),
+            )
+
+        @strawberry.field
         async def by_id(self, node_id: strawberry.scalars.ID, info: Info["AppContext"]) -> NodeColdtag:
             node_coldtag_persistence = info.context.node_coldtag_persistence
             persisted_node = await node_coldtag_persistence.find_node_by_id(node_id)

@@ -73,8 +73,55 @@ class NodeColdtagPersistence(BasePersistence):
         async def __query(client: PgConnection) -> list[NodeColdtagSchema]:
             rows = await client.fetch(
                 """
-                    SELECT * FROM node_coldtag
-                    """
+                SELECT * FROM node_coldtag
+                """
+            )
+            return [NodeColdtagSchema(**row) for row in rows]
+
+        node_coldtag_schemas = await self._commit(__query)
+        return cast(
+            "list[PersistedNodeColdtag]",
+            await asyncio.gather(
+                *[PersistedNodeColdtag.construct_model(self._app, schema) for schema in node_coldtag_schemas]
+            ),
+        )
+
+    async def find_nodes_available_for_route_cycle(self) -> list[PersistedNodeColdtag]:
+        async def __query(client: PgConnection) -> list[NodeColdtagSchema]:
+            rows = await client.fetch(
+                """
+                SELECT
+                  NC.*
+                FROM
+                  "node_coldtag" NC
+                WHERE
+                  NOT EXISTS (
+                    SELECT
+                      1
+                    FROM
+                      "route_cycle" RC
+                    WHERE
+                      RC.NODE_COLDTAG_ID = NC.ID
+                      AND (
+                        RC.COMPLETED IS DISTINCT FROM TRUE
+                        AND RC.CANCELED IS DISTINCT FROM TRUE
+                      )
+                      AND RC.ID = (
+                        SELECT
+                          RC2.ID
+                        FROM
+                          "route_cycle" RC2
+                        WHERE
+                          RC2.NODE_COLDTAG_ID = NC.ID
+                        ORDER BY
+                          RC2.ID DESC
+                        LIMIT
+                          1
+                      )
+                  )
+                ORDER BY
+                  NC.ID;
+                """
             )
             return [NodeColdtagSchema(**row) for row in rows]
 

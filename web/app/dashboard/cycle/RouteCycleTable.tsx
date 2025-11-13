@@ -226,7 +226,7 @@ const getTableColumns = ({
       />
     ),
     meta: {
-      label: 'Owner',
+      label: 'Client',
     },
   },
   {
@@ -238,7 +238,7 @@ const getTableColumns = ({
       />
     ),
     meta: {
-      label: 'Placed at',
+      label: 'Placing at',
     },
   },
   {
@@ -321,6 +321,7 @@ const getTableColumns = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
+              disabled={row.original.completed || row.original.canceled}
               onClick={() => {
                 onClickEdit?.(row.original)
               }}
