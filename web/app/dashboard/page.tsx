@@ -14,6 +14,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart.tsx'
 import { Separator } from '@/components/ui/separator.tsx'
+import { Spinner } from '@/components/ui/spinner.tsx'
 import { Typography } from '@/components/ui/typography.tsx'
 import { useErrorState } from '@/stores/error.tsx'
 import {
@@ -110,7 +111,7 @@ const DashboardPage = () => {
       } catch (err) {
         catchError(err as Error)
       } finally {
-        setState((state) => ({ ...state, loading: true }))
+        setState((state) => ({ ...state, loading: false }))
       }
     })()
   }, [catchError, gqlClient])
@@ -146,7 +147,9 @@ const DashboardPage = () => {
               <span className="text-sm font-semibold text-muted-foreground transition hover:text-foreground">
                 {label}
               </span>
-              <span className="text-2xl tabular-nums">{value}</span>
+              <span className="text-2xl tabular-nums">
+                {state.loading ? <Spinner /> : value}
+              </span>
             </div>
           ))}
         </div>
@@ -154,106 +157,108 @@ const DashboardPage = () => {
 
       <Separator orientation="horizontal" />
 
-      <div className="grid w-full grid-cols-3 gap-4 py-16">
-        {(
-          [
-            {
-              title: 'Core Telemetry Event',
-              description: 'MQTT Requests',
-              data: state.statistics?.core,
-            },
-            {
-              title: 'Node Telemetry Event',
-              description: 'MQTT Requests',
-              data: state.statistics?.node,
-            },
-            {
-              title: 'Node Alert Liquid Event',
-              description: 'MQTT Requests',
-              data: state.statistics?.nodeAlertLiquid,
-            },
-            {
-              title: 'Node Alert Impact Event',
-              description: 'MQTT Requests',
-              data: state.statistics?.nodeAlertImpact,
-            },
-          ] as {
-            title: string
-            description: string
-            data: { eventTime: string }[] | undefined
-          }[]
-        ).map(({ title, description, data }, index) => (
-          <Card key={index}>
-            <CardHeader>
-              <CardTitle>{title}</CardTitle>
-              <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                className="w-full"
-                config={
-                  {
-                    counts: {
-                      label: 'Counts',
-                      color: 'var(--chart-1)',
-                    },
-                  } satisfies ChartConfig
-                }
-              >
-                <BarChart
-                  accessibilityLayer
-                  data={(() => {
-                    if (!data) {
-                      return
-                    }
-                    const t0 = new Date(data[0].eventTime)
-
-                    const base = Array.from({ length: 6 }, (_, i) => {
-                      const time = new Date(t0.getTime() + 10 * 60000 * i)
-                      return {
-                        time,
-                        counts: 0,
-                      }
-                    })
-
-                    const result =
-                      data.reduce((acc, item) => {
-                        const t = new Date(item.eventTime)
-                        const diff = t.getTime() - t0.getTime()
-                        const bucketIndex = Math.floor(diff / (10 * 60000))
-                        if (bucketIndex >= 0 && bucketIndex < acc.length) {
-                          acc[bucketIndex].counts += 1
-                        }
-                        return acc
-                      }, base) ?? base
-
-                    return result
-                  })()}
+      {!state.loading && (
+        <div className="grid w-full grid-cols-3 gap-4 py-16">
+          {(
+            [
+              {
+                title: 'Core Telemetry Event',
+                description: 'MQTT Requests',
+                data: state.statistics?.core,
+              },
+              {
+                title: 'Node Telemetry Event',
+                description: 'MQTT Requests',
+                data: state.statistics?.node,
+              },
+              {
+                title: 'Node Alert Liquid Event',
+                description: 'MQTT Requests',
+                data: state.statistics?.nodeAlertLiquid,
+              },
+              {
+                title: 'Node Alert Impact Event',
+                description: 'MQTT Requests',
+                data: state.statistics?.nodeAlertImpact,
+              },
+            ] as {
+              title: string
+              description: string
+              data: { eventTime: string }[] | undefined
+            }[]
+          ).map(({ title, description, data }, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer
+                  className="w-full"
+                  config={
+                    {
+                      counts: {
+                        label: 'Counts',
+                        color: 'var(--chart-1)',
+                      },
+                    } satisfies ChartConfig
+                  }
                 >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="time"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    tickFormatter={(value) => {
-                      return value.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                  <BarChart
+                    accessibilityLayer
+                    data={(() => {
+                      if (!data) {
+                        return
+                      }
+                      const t0 = new Date(data[0].eventTime)
+
+                      const base = Array.from({ length: 6 }, (_, i) => {
+                        const time = new Date(t0.getTime() + 10 * 60000 * i)
+                        return {
+                          time,
+                          counts: 0,
+                        }
                       })
-                    }}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Bar dataKey="counts" fill="var(--color-counts)" radius={2} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
+                      const result =
+                        data.reduce((acc, item) => {
+                          const t = new Date(item.eventTime)
+                          const diff = t.getTime() - t0.getTime()
+                          const bucketIndex = Math.floor(diff / (10 * 60000))
+                          if (bucketIndex >= 0 && bucketIndex < acc.length) {
+                            acc[bucketIndex].counts += 1
+                          }
+                          return acc
+                        }, base) ?? base
+
+                      return result
+                    })()}
+                  >
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="time"
+                      tickLine={false}
+                      tickMargin={10}
+                      axisLine={false}
+                      tickFormatter={(value) => {
+                        return value.toLocaleTimeString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      }}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Bar dataKey="counts" fill="var(--color-counts)" radius={2} />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
