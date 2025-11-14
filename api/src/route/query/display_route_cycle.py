@@ -48,6 +48,11 @@ class RouteCycleDisplay:
 
             return await resolve_route_cycle(persisted_route_cycle, info=info)
 
+        @strawberry.field
+        async def count(self, info: Info["AppContext"]) -> int:
+            route_cycle_persistence = info.context.route_cycle_persistence
+            return await route_cycle_persistence.count_route_cycles()
+
     @strawberry.field
     async def display_route_cycle(self) -> DisplayRouteCycleFields:
         return RouteCycleDisplay.DisplayRouteCycleFields()

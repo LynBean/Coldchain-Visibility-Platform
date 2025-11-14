@@ -34,6 +34,11 @@ class CoreColdtagDisplay:
 
             return await resolve_core_coldtag(persisted_core, info=info)
 
+        @strawberry.field
+        async def count(self, info: Info["AppContext"]) -> int:
+            core_coldtag_persistence = info.context.core_coldtag_persistence
+            return await core_coldtag_persistence.count_cores()
+
     @strawberry.field
     async def display_core_coldtag(self) -> DisplayCoreColdtagFields:
         return CoreColdtagDisplay.DisplayCoreColdtagFields()

@@ -43,6 +43,11 @@ class NodeColdtagDisplay:
 
             return await resolve_node_coldtag(persisted_node, info=info)
 
+        @strawberry.field
+        async def count(self, info: Info["AppContext"]) -> int:
+            node_coldtag_persistence = info.context.node_coldtag_persistence
+            return await node_coldtag_persistence.count_nodes()
+
     @strawberry.field
     async def display_node_coldtag(self) -> DisplayNodeColdtagFields:
         return NodeColdtagDisplay.DisplayNodeColdtagFields()

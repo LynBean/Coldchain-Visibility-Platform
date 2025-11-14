@@ -61,6 +61,21 @@ class CoreColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def count_cores(self) -> int:
+        async def __query(client: PgConnection) -> int:
+            row = cast(
+                "PgRecord",
+                await client.fetchrow(
+                    """
+                    SELECT COUNT(*) AS count
+                    FROM core_coldtag
+                """
+                ),
+            )
+            return row["count"]
+
+        return await self._commit(__query)
+
     async def find_cores(self) -> list[PersistedCoreColdtag]:
         async def __query(client: PgConnection) -> list[CoreColdtagSchema]:
             rows = await client.fetch(
@@ -134,6 +149,31 @@ class CoreColdtagPersistence(BasePersistence):
                 int(core_id),
             )
 
+            return cast(
+                "list[PersistedCoreColdtagEvent]",
+                await asyncio.gather(
+                    *[
+                        PersistedCoreColdtagEvent.construct_model(self._app, CoreColdtagEventSchema(**row))
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
+    async def find_core_events_all_by_time_range(
+        self, /, a: datetime, b: datetime | None = None
+    ) -> list[PersistedCoreColdtagEvent]:
+        async def __query(client: PgConnection) -> list[PersistedCoreColdtagEvent]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM core_coldtag_event
+                    WHERE event_time >= $1
+                    AND ($2::timestamptz IS NULL OR event_time <= $2)
+                """,
+                a,
+                b,
+            )
             return cast(
                 "list[PersistedCoreColdtagEvent]",
                 await asyncio.gather(

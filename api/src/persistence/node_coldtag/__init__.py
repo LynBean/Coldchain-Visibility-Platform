@@ -69,6 +69,21 @@ class NodeColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def count_nodes(self) -> int:
+        async def __query(client: PgConnection) -> int:
+            row = cast(
+                "PgRecord",
+                await client.fetchrow(
+                    """
+                    SELECT COUNT(*) AS count
+                    FROM node_coldtag
+                """
+                ),
+            )
+            return row["count"]
+
+        return await self._commit(__query)
+
     async def find_nodes(self) -> list[PersistedNodeColdtag]:
         async def __query(client: PgConnection) -> list[NodeColdtagSchema]:
             rows = await client.fetch(
@@ -201,6 +216,32 @@ class NodeColdtagPersistence(BasePersistence):
 
         return await self._commit(__query)
 
+    async def find_node_events_all_by_time_range(
+        self, a: datetime, b: datetime | None = None
+    ) -> list[PersistedNodeColdtagEvent]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event
+                    WHERE event_time >= $1
+                    AND ($2::timestamptz IS NULL OR event_time <= $2)
+                """,
+                a,
+                b,
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEvent]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEvent.construct_model(self._app, NodeColdtagEventSchema(**row))
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
     async def find_node_events_by_time_range(
         self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
     ) -> list[PersistedNodeColdtagEvent]:
@@ -239,6 +280,34 @@ class NodeColdtagPersistence(BasePersistence):
                     WHERE node_coldtag_id = $1
                     """,
                 int(node_id),
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEventAlertImpact]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEventAlertImpact.construct_model(
+                            self._app, NodeColdtagEventAlertImpactSchema(**row)
+                        )
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
+    async def find_node_event_alert_impacts_all_by_time_range(
+        self, a: datetime, b: datetime | None = None
+    ) -> list[PersistedNodeColdtagEventAlertImpact]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertImpact]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event_alert_impact
+                    WHERE event_time >= $1
+                    AND ($2::timestamptz IS NULL OR event_time <= $2)
+                """,
+                a,
+                b,
             )
 
             return cast(
@@ -295,6 +364,34 @@ class NodeColdtagPersistence(BasePersistence):
                     WHERE node_coldtag_id = $1
                     """,
                 int(node_id),
+            )
+
+            return cast(
+                "list[PersistedNodeColdtagEventAlertLiquid]",
+                await asyncio.gather(
+                    *[
+                        PersistedNodeColdtagEventAlertLiquid.construct_model(
+                            self._app, NodeColdtagEventAlertLiquidSchema(**row)
+                        )
+                        for row in rows
+                    ]
+                ),
+            )
+
+        return await self._commit(__query)
+
+    async def find_node_event_alert_liquids_all_by_time_range(
+        self, /, a: datetime, b: datetime | None = None
+    ) -> list[PersistedNodeColdtagEventAlertLiquid]:
+        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertLiquid]:
+            rows = await client.fetch(
+                """
+                    SELECT * FROM node_coldtag_event_alert_liquid
+                    WHERE event_time >= $1
+                    AND ($2::timestamptz IS NULL OR event_time <= $2)
+                """,
+                a,
+                b,
             )
 
             return cast(

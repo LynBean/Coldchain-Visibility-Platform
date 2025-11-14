@@ -1,0 +1,59 @@
+query CVP_Dashboard_DisplayCoreColdtagCount {
+  displayCoreColdtag {
+    count
+  }
+}
+
+query CVP_Dashboard_DisplayNodeColdtagCount {
+  displayNodeColdtag {
+    count
+  }
+}
+
+query CVP_Dashboard_DisplayRouteCycleCount {
+  displayRouteCycle {
+    count
+  }
+}
+
+query CVP_Dashboard_DisplayCoreColdtagEventsAllByTimeRange($a: DateTime!, $b: DateTime) {
+  displayCoreColdtagEvent {
+    allByTimeRange(a: $a, b: $b) {
+      id
+      eventTime
+    }
+  }
+}
+
+query CVP_Dashboard_DisplayNodeColdtagEventsAllByTimeRange($a: DateTime!, $b: DateTime) {
+  displayNodeColdtagEvent {
+    allByTimeRange(a: $a, b: $b) {
+      id
+      eventTime
+    }
+  }
+}
+
+query CVP_Dashboard_DisplayNodeColdtagEventAlertLiquidsAllByTimeRange(
+  $a: DateTime!
+  $b: DateTime
+) {
+  displayNodeColdtagEventAlertLiquid {
+    allByTimeRange(a: $a, b: $b) {
+      id
+      eventTime
+    }
+  }
+}
+
+query CVP_Dashboard_DisplayNodeColdtagEventAlertImpactsAllByTimeRange(
+  $a: DateTime!
+  $b: DateTime
+) {
+  displayNodeColdtagEventAlertImpact {
+    allByTimeRange(a: $a, b: $b) {
+      id
+      eventTime
+    }
+  }
+}

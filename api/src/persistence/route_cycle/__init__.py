@@ -30,6 +30,21 @@ class RouteCyclePersistence(BasePersistence):
     def __init__(self, app: FastAPI, pool: PgPool) -> None:
         super().__init__(app, pool=pool)
 
+    async def count_route_cycles(self) -> int:
+        async def __query(client: PgConnection) -> int:
+            row = cast(
+                "PgRecord",
+                await client.fetchrow(
+                    """
+                    SELECT COUNT(*) AS count
+                    FROM route_cycle
+                """
+                ),
+            )
+            return row["count"]
+
+        return await self._commit(__query)
+
     async def find_route_cycles(self) -> list[PersistedRouteCycle]:
         async def __query(client: PgConnection) -> list[RouteCycleSchema]:
             rows = await client.fetch(
