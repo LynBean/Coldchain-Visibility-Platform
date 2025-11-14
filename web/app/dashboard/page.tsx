@@ -208,7 +208,7 @@ const DashboardPage = () => {
                     <BarChart
                       accessibilityLayer
                       data={(() => {
-                        if (!data) {
+                        if (!data?.length) {
                           return
                         }
                         const t0 = new Date(data[0].eventTime)
