@@ -117,148 +117,150 @@ const DashboardPage = () => {
   }, [catchError, gqlClient])
 
   return (
-    <div className="flex h-full flex-col [&>div]:px-48">
-      <div className="flex h-48 w-full flex-row items-center justify-between">
-        <Typography variant="h2" className="font-semibold">
-          Coldchain Visibility Platform
-        </Typography>
+    <div className="flex h-full w-full justify-center">
+      <div className="flex h-full w-full max-w-6xl flex-col px-8">
+        <div className="flex h-48 w-full flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <Typography variant="h2" className="font-semibold">
+            Coldchain Visibility Platform
+          </Typography>
 
-        <div className="flex flex-row gap-x-6">
-          {(
-            [
-              {
-                label: 'Cores',
-                value: state.counts?.core,
-              },
-              {
-                label: 'Nodes',
-                value: state.counts?.node,
-              },
-              {
-                label: 'Route Cycles',
-                value: state.counts?.routeCycle,
-              },
-            ] as {
-              label: string
-              value: number
-            }[]
-          ).map(({ label, value }, index) => (
-            <div key={index} className="flex flex-col items-start gap-y-2">
-              <span className="text-sm font-semibold text-muted-foreground transition hover:text-foreground">
-                {label}
-              </span>
-              <span className="text-2xl tabular-nums">
-                {state.loading ? <Spinner /> : value}
-              </span>
-            </div>
-          ))}
+          <div className="flex flex-row gap-x-6">
+            {(
+              [
+                {
+                  label: 'Cores',
+                  value: state.counts?.core,
+                },
+                {
+                  label: 'Nodes',
+                  value: state.counts?.node,
+                },
+                {
+                  label: 'Route Cycles',
+                  value: state.counts?.routeCycle,
+                },
+              ] as {
+                label: string
+                value: number
+              }[]
+            ).map(({ label, value }, index) => (
+              <div key={index} className="flex flex-col items-start gap-y-2">
+                <span className="text-sm font-semibold text-muted-foreground transition hover:text-foreground">
+                  {label}
+                </span>
+                <span className="text-2xl tabular-nums">
+                  {state.loading ? <Spinner /> : value}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <Separator orientation="horizontal" />
+        <Separator orientation="horizontal" />
 
-      {!state.loading && (
-        <div className="grid w-full grid-cols-3 gap-4 py-16">
-          {(
-            [
-              {
-                title: 'Core Telemetry Event',
-                description: 'MQTT Requests',
-                data: state.statistics?.core,
-              },
-              {
-                title: 'Node Telemetry Event',
-                description: 'MQTT Requests',
-                data: state.statistics?.node,
-              },
-              {
-                title: 'Node Alert Liquid Event',
-                description: 'MQTT Requests',
-                data: state.statistics?.nodeAlertLiquid,
-              },
-              {
-                title: 'Node Alert Impact Event',
-                description: 'MQTT Requests',
-                data: state.statistics?.nodeAlertImpact,
-              },
-            ] as {
-              title: string
-              description: string
-              data: { eventTime: string }[] | undefined
-            }[]
-          ).map(({ title, description, data }, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  className="w-full"
-                  config={
-                    {
-                      counts: {
-                        label: 'Counts',
-                        color: 'var(--chart-1)',
-                      },
-                    } satisfies ChartConfig
-                  }
-                >
-                  <BarChart
-                    accessibilityLayer
-                    data={(() => {
-                      if (!data) {
-                        return
-                      }
-                      const t0 = new Date(data[0].eventTime)
-
-                      const base = Array.from({ length: 6 }, (_, i) => {
-                        const time = new Date(t0.getTime() + 10 * 60000 * i)
-                        return {
-                          time,
-                          counts: 0,
-                        }
-                      })
-
-                      const result =
-                        data.reduce((acc, item) => {
-                          const t = new Date(item.eventTime)
-                          const diff = t.getTime() - t0.getTime()
-                          const bucketIndex = Math.floor(diff / (10 * 60000))
-                          if (bucketIndex >= 0 && bucketIndex < acc.length) {
-                            acc[bucketIndex].counts += 1
-                          }
-                          return acc
-                        }, base) ?? base
-
-                      return result
-                    })()}
+        {!state.loading && (
+          <div className="grid w-full grid-cols-1 gap-4 py-16 md:grid-cols-3">
+            {(
+              [
+                {
+                  title: 'Core Telemetry Event',
+                  description: 'MQTT Requests',
+                  data: state.statistics?.core,
+                },
+                {
+                  title: 'Node Telemetry Event',
+                  description: 'MQTT Requests',
+                  data: state.statistics?.node,
+                },
+                {
+                  title: 'Node Alert Liquid Event',
+                  description: 'MQTT Requests',
+                  data: state.statistics?.nodeAlertLiquid,
+                },
+                {
+                  title: 'Node Alert Impact Event',
+                  description: 'MQTT Requests',
+                  data: state.statistics?.nodeAlertImpact,
+                },
+              ] as {
+                title: string
+                description: string
+                data: { eventTime: string }[] | undefined
+              }[]
+            ).map(({ title, description, data }, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle>{title}</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    className="w-full"
+                    config={
+                      {
+                        counts: {
+                          label: 'Counts',
+                          color: 'var(--chart-1)',
+                        },
+                      } satisfies ChartConfig
+                    }
                   >
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="time"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      tickFormatter={(value) => {
-                        return value.toLocaleTimeString('en-US', {
-                          hour: '2-digit',
-                          minute: '2-digit',
+                    <BarChart
+                      accessibilityLayer
+                      data={(() => {
+                        if (!data) {
+                          return
+                        }
+                        const t0 = new Date(data[0].eventTime)
+
+                        const base = Array.from({ length: 6 }, (_, i) => {
+                          const time = new Date(t0.getTime() + 10 * 60000 * i)
+                          return {
+                            time,
+                            counts: 0,
+                          }
                         })
-                      }}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Bar dataKey="counts" fill="var(--color-counts)" radius={2} />
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+
+                        const result =
+                          data.reduce((acc, item) => {
+                            const t = new Date(item.eventTime)
+                            const diff = t.getTime() - t0.getTime()
+                            const bucketIndex = Math.floor(diff / (10 * 60000))
+                            if (bucketIndex >= 0 && bucketIndex < acc.length) {
+                              acc[bucketIndex].counts += 1
+                            }
+                            return acc
+                          }, base) ?? base
+
+                        return result
+                      })()}
+                    >
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="time"
+                        tickLine={false}
+                        tickMargin={10}
+                        axisLine={false}
+                        tickFormatter={(value) => {
+                          return value.toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        }}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                      />
+                      <Bar dataKey="counts" fill="var(--color-counts)" radius={2} />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
