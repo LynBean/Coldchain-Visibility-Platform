@@ -27,12 +27,15 @@ import {
   Cvp_Dashboard_DisplayRouteCycleCountQuery,
 } from '@/stores/graphql/generated.ts'
 import { useGraphQLClient } from '@/stores/graphql/index.tsx'
+import { CircuitBoard, Cpu, Droplets, LucideIcon, ServerCrash } from 'lucide-react'
+import { useRouter } from 'next/navigation.js'
 import React from 'react'
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 
 const DashboardPage = () => {
   const [, { catchError }] = useErrorState()
   const gqlClient = useGraphQLClient()
+  const router = useRouter()
 
   const [state, setState] = React.useState<{
     loading: boolean
@@ -130,24 +133,39 @@ const DashboardPage = () => {
                 {
                   label: 'Cores',
                   value: state.counts?.core,
+                  href: '/dashboard/core',
                 },
                 {
                   label: 'Nodes',
                   value: state.counts?.node,
+                  href: '/dashboard/node',
                 },
                 {
                   label: 'Route Cycles',
                   value: state.counts?.routeCycle,
+                  href: '/dashboard/cycle',
                 },
               ] as {
                 label: string
                 value: number
+                href: string
               }[]
-            ).map(({ label, value }, index) => (
+            ).map(({ label, value, href }, index) => (
               <div key={index} className="flex flex-col items-start gap-y-2">
-                <span className="text-sm font-semibold text-muted-foreground transition hover:text-foreground">
-                  {label}
-                </span>
+                <button
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    router.push(href)
+                  }}
+                >
+                  <a
+                    className="text-sm font-semibold text-muted-foreground transition hover:text-foreground"
+                    href={href}
+                  >
+                    {label}
+                  </a>
+                </button>
                 <span className="text-2xl tabular-nums">
                   {state.loading ? <Spinner /> : value}
                 </span>
@@ -155,109 +173,128 @@ const DashboardPage = () => {
             ))}
           </div>
         </div>
-
         <Separator orientation="horizontal" />
 
         {!state.loading && (
-          <div className="grid w-full grid-cols-1 gap-4 py-16 md:grid-cols-3">
-            {(
-              [
-                {
-                  title: 'Core Telemetry Event',
-                  description: 'MQTT Requests',
-                  data: state.statistics?.core,
-                },
-                {
-                  title: 'Node Telemetry Event',
-                  description: 'MQTT Requests',
-                  data: state.statistics?.node,
-                },
-                {
-                  title: 'Node Alert Liquid Event',
-                  description: 'MQTT Requests',
-                  data: state.statistics?.nodeAlertLiquid,
-                },
-                {
-                  title: 'Node Alert Impact Event',
-                  description: 'MQTT Requests',
-                  data: state.statistics?.nodeAlertImpact,
-                },
-              ] as {
-                title: string
-                description: string
-                data: { eventTime: string }[] | undefined
-              }[]
-            ).map(({ title, description, data }, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle>{title}</CardTitle>
-                  <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer
-                    className="w-full"
-                    config={
-                      {
-                        counts: {
-                          label: 'Counts',
-                          color: 'var(--chart-1)',
-                        },
-                      } satisfies ChartConfig
-                    }
-                  >
-                    <BarChart
-                      accessibilityLayer
-                      data={(() => {
-                        if (!data?.length) {
-                          return
-                        }
-                        const t0 = new Date(data[0].eventTime)
+          <div className="flex flex-col gap-y-4 py-4">
+            <span className="p-4 text-xs font-semibold text-muted-foreground">
+              Statistics for last 60 minutes
+            </span>
 
-                        const base = Array.from({ length: 6 }, (_, i) => {
-                          const time = new Date(t0.getTime() + 10 * 60000 * i)
-                          return {
-                            time,
-                            counts: 0,
-                          }
-                        })
-
-                        const result =
-                          data.reduce((acc, item) => {
-                            const t = new Date(item.eventTime)
-                            const diff = t.getTime() - t0.getTime()
-                            const bucketIndex = Math.floor(diff / (10 * 60000))
-                            if (bucketIndex >= 0 && bucketIndex < acc.length) {
-                              acc[bucketIndex].counts += 1
-                            }
-                            return acc
-                          }, base) ?? base
-
-                        return result
-                      })()}
+            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-4">
+              {(
+                [
+                  {
+                    icon: CircuitBoard,
+                    title: 'Core Telemetry',
+                    data: state.statistics?.core,
+                  },
+                  {
+                    icon: Cpu,
+                    title: 'Node Telemetry',
+                    data: state.statistics?.node,
+                  },
+                  {
+                    icon: Droplets,
+                    title: 'Liquid Alert',
+                    data: state.statistics?.nodeAlertLiquid,
+                  },
+                  {
+                    icon: ServerCrash,
+                    title: 'Impact Alert',
+                    data: state.statistics?.nodeAlertImpact,
+                  },
+                ] as {
+                  icon: LucideIcon
+                  title: string
+                  data: { eventTime: string }[] | undefined
+                }[]
+              ).map(({ icon: Icon, title, data }, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle>
+                      <div className="flex flex-row items-center gap-x-3">
+                        <Icon
+                          size="2.4rem"
+                          className="rounded-lg border p-2 text-muted-foreground"
+                        />
+                        <span className="text-foreground">{title}</span>
+                      </div>
+                    </CardTitle>
+                    <CardDescription className="flex flex-col">
+                      <span className="text-foreground-lighter gap-y-0.5 text-sm">
+                        Requests
+                      </span>
+                      <span className="text-xl font-normal text-foreground">
+                        {data?.length}
+                      </span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ChartContainer
+                      className="w-full"
+                      config={
+                        {
+                          counts: {
+                            label: 'Counts',
+                            color: `var(--chart-${(index % 4) + 1})`,
+                          },
+                        } satisfies ChartConfig
+                      }
                     >
-                      <CartesianGrid vertical={false} />
-                      <XAxis
-                        dataKey="time"
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        tickFormatter={(value) => {
-                          return value.toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
+                      <BarChart
+                        accessibilityLayer
+                        data={(() => {
+                          const t0 = data?.[0]
+                            ? new Date(data[0].eventTime)
+                            : new Date(Date.now() - 60 * 60000)
+
+                          const base = Array.from({ length: 6 }, (_, i) => {
+                            const time = new Date(t0.getTime() + 10 * 60000 * i)
+                            return {
+                              time,
+                              counts: 0,
+                            }
                           })
-                        }}
-                      />
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Bar dataKey="counts" fill="var(--color-counts)" radius={2} />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            ))}
+
+                          const result =
+                            data?.reduce((acc, item) => {
+                              const t = new Date(item.eventTime)
+                              const diff = t.getTime() - t0.getTime()
+                              const bucketIndex = Math.floor(diff / (10 * 60000))
+                              if (bucketIndex >= 0 && bucketIndex < acc.length) {
+                                acc[bucketIndex].counts += 1
+                              }
+                              return acc
+                            }, base) ?? base
+
+                          return result
+                        })()}
+                      >
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                          dataKey="time"
+                          tickLine={false}
+                          tickMargin={10}
+                          axisLine={false}
+                          tickFormatter={(value) => {
+                            return value.toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          }}
+                        />
+                        <ChartTooltip
+                          cursor={false}
+                          content={<ChartTooltipContent hideLabel />}
+                        />
+                        <Bar dataKey="counts" fill="var(--color-counts)" />
+                      </BarChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </div>
