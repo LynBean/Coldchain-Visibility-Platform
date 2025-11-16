@@ -7,14 +7,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card.tsx'
-import { ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart.tsx'
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart.tsx'
 import { DialogDescription } from '@/components/ui/dialog.tsx'
 import { Item, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item.tsx'
 import tw from '@/lib/tw.ts'
 import { Cvp_DashboardTelemetry_DisplayCoreColdtagByIdQuery } from '@/stores/graphql/generated.ts'
-import { Clock, LocateFixed } from 'lucide-react'
+import { Battery, Clock, LocateFixed } from 'lucide-react'
 import React from 'react'
-import RechartsPrimitive, { CartesianGrid, Scatter, ScatterChart, XAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import EventDialog from './EventDialog.tsx'
 
 const CoreTelemetryEventChart: React.FunctionComponent<{
@@ -22,7 +29,7 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
 }> = ({ events }) => {
   type Payload = {
     date: string
-    y: number
+    battery?: number // TODO(Victor): Battery
     coordinate?: {
       latitude: number
       longitude: number
@@ -46,25 +53,18 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
     setState((state) => ({
       ...state,
       payload: events
-        .toSorted(
-          (a, b) => new Date(a.eventTime).getTime() - new Date(b.eventTime).getTime()
+        .map(
+          (event) =>
+            ({
+              date: event.eventTime,
+              battery: (() => {
+                const seed = new Date(event.eventTime).getTime()
+                return 1000 + (seed % 3001)
+              })(),
+              coordinate: event.coordinate,
+            }) as Payload
         )
-        .map((event, index, arr) => {
-          const currentTime = new Date(event.eventTime).getTime()
-          const prevTime = index > 0 ? new Date(arr[index - 1].eventTime).getTime() : 0
-          const timeDiff = index > 0 ? Math.abs(currentTime - prevTime) : 0
-          const variance = Math.min(1, 100000 / (timeDiff + 1)) // closer times → higher variance
-          const randomOffset = (Math.random() - 0.5) * variance
-
-          const baseValue = 1.5 + randomOffset
-          const clampedValue = Math.min(2, Math.max(1, baseValue))
-
-          return {
-            date: event.eventTime,
-            y: clampedValue,
-            coordinate: event.coordinate,
-          } as Payload
-        }),
+        .toSorted((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     }))
   }, [events])
 
@@ -80,11 +80,16 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <ChartContainer
             config={
-              { date: { label: 'Date', color: 'var(--chart-2)' } } satisfies ChartConfig
+              {
+                battery: {
+                  label: 'Battery',
+                  color: 'var(--chart-5)',
+                },
+              } satisfies ChartConfig
             }
             className="aspect-auto h-[250px] w-full"
           >
-            <ScatterChart
+            <AreaChart
               data={state.payload}
               onClick={(chartState) => {
                 if (
@@ -100,6 +105,12 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
                 }
               }}
             >
+              <defs>
+                <linearGradient id="fillBattery" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-battery)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-battery)" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -119,37 +130,29 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
               <ChartTooltip
                 cursor={false}
                 content={
-                  (({ payload }, ref) => {
-                    return (
-                      <div
-                        ref={ref}
-                        className={tw`grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl`}
-                      >
-                        {payload && payload.length && (
-                          <>
-                            <div className={tw`font-medium`}>
-                              {new Date(payload[0].value as number).toLocaleDateString(
-                                'en-US',
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  second: '2-digit',
-                                }
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )
-                  }) as React.FunctionComponent<
-                    React.ComponentProps<typeof RechartsPrimitive.Tooltip>
-                  >
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      })
+                    }}
+                    indicator="dot"
+                  />
                 }
               />
-              <Scatter dataKey="y" fill="var(--color-date)" shape="circle" />
-            </ScatterChart>
+              <Area
+                dataKey="battery"
+                type="bump"
+                fill="url(#fillBattery)"
+                stroke="var(--color-battery)"
+                stackId="a"
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -170,6 +173,13 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
           <div className={tw`grid grid-cols-2 gap-2 py-4`}>
             {(
               [
+                {
+                  icon: <Battery className={tw`text-green-400`} />,
+                  title: 'Battery',
+                  description: (
+                    <DialogDescription>{`${dialogState.current.battery} mAh`}</DialogDescription>
+                  ),
+                },
                 {
                   className: 'col-span-2',
                   icon: <Clock />,

@@ -20,9 +20,9 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item.ts
 import { Typography } from '@/components/ui/typography.tsx'
 import tw from '@/lib/tw.ts'
 import { Cvp_DashboardTelemetry_DisplayNodeColdtagByIdQuery } from '@/stores/graphql/generated.ts'
-import { Clock, Cpu, Droplets, LocateFixed, Thermometer } from 'lucide-react'
+import { Battery, Clock, Cpu, Droplets, LocateFixed, Thermometer } from 'lucide-react'
 import React from 'react'
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import EventDialog from './EventDialog.tsx'
 
 const NodeTelemetryEventChart: React.FunctionComponent<{
@@ -30,6 +30,7 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
 }> = ({ events }) => {
   type Payload = {
     date: string
+    battery?: number // TODO(Victor): Battery
     temperature?: number
     humidity?: number
     coreColdtag: {
@@ -64,6 +65,10 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
           (event) =>
             ({
               date: event.eventTime,
+              battery: (() => {
+                const seed = new Date(event.eventTime).getTime()
+                return 1000 + (seed % 3001)
+              })(),
               temperature: event.temperature,
               humidity: event.humidity,
               coreColdtag: event.coreColdtag,
@@ -87,6 +92,10 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
           <ChartContainer
             config={
               {
+                battery: {
+                  label: 'Battery',
+                  color: 'var(--chart-5)',
+                },
                 temperature: {
                   label: 'Temperature',
                   color: 'var(--chart-1)',
@@ -116,6 +125,10 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
               }}
             >
               <defs>
+                <linearGradient id="fillBattery" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-battery)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-battery)" stopOpacity={0.1} />
+                </linearGradient>
                 <linearGradient id="fillTemperature" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
@@ -170,7 +183,18 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
                   />
                 }
               />
+              <YAxis yAxisId="left" hide />
+              <YAxis yAxisId="right" orientation="right" hide />
               <Area
+                yAxisId="left"
+                dataKey="battery"
+                type="bump"
+                fill="url(#fillBattery)"
+                stroke="var(--color-battery)"
+                stackId="a"
+              />
+              <Area
+                yAxisId="right"
                 dataKey="temperature"
                 type="bump"
                 fill="url(#fillTemperature)"
@@ -178,6 +202,7 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
                 stackId="a"
               />
               <Area
+                yAxisId="right"
                 dataKey="humidity"
                 type="bump"
                 fill="url(#fillHumidity)"
@@ -206,6 +231,13 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
           <div className={tw`grid grid-cols-2 gap-2 py-4`}>
             {(
               [
+                {
+                  icon: <Battery className={tw`text-green-400`} />,
+                  title: 'Battery',
+                  description: (
+                    <DialogDescription>{`${dialogState.current.battery} mAh`}</DialogDescription>
+                  ),
+                },
                 {
                   icon: <Thermometer className={tw`text-red-500`} />,
                   title: 'Temperature',
