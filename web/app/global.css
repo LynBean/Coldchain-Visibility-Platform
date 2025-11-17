@@ -4,85 +4,76 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --sidebar: #0090B4;
-  --sidebar-gradient: linear-gradient(180deg, #09577E 0%, #0090B4 100%);
-  --sidebar-foreground: #E9F8FF;
-  --sidebar-primary: #00A7CF;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #008FBF;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(255, 255, 255, 0.10);
-  --sidebar-ring: #60E6FF;
+  --sidebar: #0090b4;
+  --sidebar-gradient: linear-gradient(180deg, #09577e 0%, #0090b4 100%);
+  --sidebar-foreground: #e9f8ff;
+  --sidebar-primary: #00a7cf;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #008fbf;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #60e6ff;
   --radius: 0.75rem;
-  --card: #FFFFFF;
+  --card: #ffffff;
   --card-foreground: #093144;
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: #093144;
-  --primary: #00A7CF;
-  --primary-foreground: #FFFFFF;
-  --secondary: #E2FAFF;
-  --secondary-foreground: #005C88;
-  --muted: #E5F3FB;
-  --muted-foreground: #6A8CA3;
-  --accent: #C7F6FF;
-  --accent-foreground: #005C88;
-  --destructive: #FF6060;
+  --primary: #00a7cf;
+  --primary-foreground: #ffffff;
+  --secondary: #e2faff;
+  --secondary-foreground: #005c88;
+  --muted: #e5f3fb;
+  --muted-foreground: #6a8ca3;
+  --accent: #c7f6ff;
+  --accent-foreground: #005c88;
+  --destructive: #ff6060;
   --border: rgba(0, 0, 0, 0.12);
   --input: rgba(0, 0, 0, 0.14);
-  --ring: #60E6FF;
-  --chart-1: #00B7B3;
-  --chart-2: #FFB27A;
-  --chart-3: #0094D1;
-  --chart-4: #FFD870;
-  --chart-5: #FF7A8A;
-  --background: #EBFEFF;
-  --background-gradient: linear-gradient(
-    135deg,
-    #EBFEFF 0%,
-    #D4F7FF 45%,
-    #9EF0FF 100%
-  );
+  --ring: #60e6ff;
+  --chart-1: #00b7b3;
+  --chart-2: #ffb27a;
+  --chart-3: #0094d1;
+  --chart-4: #ffd870;
+  --chart-5: #ff7a8a;
+  --background: #ebfeff;
+  --background-gradient: linear-gradient(135deg, #ebfeff 0%, #d4f4fc 45%, #9ef0ff 100%);
   --foreground: #093144;
 }
 
 .dark {
   --sidebar: #024365;
-  --sidebar-gradient: linear-gradient(180deg, #020B16 0%, #024365 100%);
-  --sidebar-foreground: #EAFBFF;
-  --sidebar-primary: #00B7DF;
+  --sidebar-gradient: linear-gradient(180deg, #020b16 0%, #042739 100%);
+  --sidebar-foreground: #eafbff;
+  --sidebar-primary: #00b7df;
   --sidebar-primary-foreground: #022739;
   --sidebar-accent: #033856;
-  --sidebar-accent-foreground: #EAFBFF;
+  --sidebar-accent-foreground: #eafbff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #4FD3FF;
-  --background: #04131F;
-  --background-gradient: linear-gradient(
-    135deg,
-    #04131F 0%,
-    #020A11 100%
-  );
-  --foreground: #E9F8FF;
+  --sidebar-ring: #4fd3ff;
+  --background: #04131f;
+  --background-gradient: linear-gradient(135deg, #04131f 0%, #020a11 100%);
+  --foreground: #e9f8ff;
   --card: #062334;
-  --card-foreground: #E9F8FF;
+  --card-foreground: #e9f8ff;
   --popover: #062334;
-  --popover-foreground: #E9F8FF;
-  --primary: #00B7DF;
+  --popover-foreground: #e9f8ff;
+  --primary: #00b7df;
   --primary-foreground: #022739;
-  --secondary: #08344C;
-  --secondary-foreground: #E9F8FF;
-  --muted: #08344C;
-  --muted-foreground: #A5CFE5;
-  --accent: #0C4766;
-  --accent-foreground: #E9F8FF;
-  --destructive: #FF7A8A;
+  --secondary: #08344c;
+  --secondary-foreground: #e9f8ff;
+  --muted: #08344c;
+  --muted-foreground: #a5cfe5;
+  --accent: #0c4766;
+  --accent-foreground: #e9f8ff;
+  --destructive: #ff7a8a;
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.16);
-  --ring: #4FD3FF;
-  --chart-1: #00D1C9;
-  --chart-2: #FFC487;
-  --chart-3: #36A6FF;
-  --chart-4: #FFE070;
-  --chart-5: #FF8FA1;
+  --ring: #4fd3ff;
+  --chart-1: #00d1c9;
+  --chart-2: #ffc487;
+  --chart-3: #36a6ff;
+  --chart-4: #ffe070;
+  --chart-5: #ff8fa1;
 }
 
 @theme inline {
@@ -184,13 +175,13 @@ main {
   background-image: none !important;
 }
 
-.sheet, 
-.drawer, 
+.sheet,
+.drawer,
 [data-state="open"].fixed.right-0,
 .bg-panel,
 div[class*="SheetContent"],
 div[class*="DrawerContent"] {
-  background-color: #FFFFFF !important;
+  background-color: #ffffff !important;
   background-image: none !important;
 }
 
@@ -217,10 +208,8 @@ html:not(.dark) div[role="search"] input {
   backdrop-filter: blur(8px) !important;
 }
 
-html:not(.dark)
-  button:has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]),
-html:not(.dark)
-  button:has(span):has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]) {
+html:not(.dark) button:has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]),
+html:not(.dark) button:has(span):has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]) {
   background-color: rgba(255, 255, 255, 0.45) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
@@ -283,3 +272,4 @@ table thead div[role="button"] {
   border: none !important;
   box-shadow: none !important;
 }
+
