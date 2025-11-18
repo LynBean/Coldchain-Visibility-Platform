@@ -100,17 +100,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
+          bun-version: "latest"
 
       - uses: astral-sh/setup-uv@v6
 
-      - run: npm run dev:install
+      - run: bun run dev:install
 
       - name: Check formatting
         run: |
-          npm run format
+          bun run format
           git add .
           if git diff --exit-code --name-only --staged | grep .; then
             echo "Formatting issues detected:"

@@ -258,7 +258,7 @@ const DashboardChartsPage = () => {
                   <ItemDescription>
                     {state.current?.nodeColdtag.identifier}
                   </ItemDescription>
-                  <div className="flex flex-row gap-1 text-muted-foreground">
+                  <div className="text-muted-foreground flex flex-row gap-1">
                     <Typography variant="inline-code">
                       {state.current?.nodeColdtag.id}
                     </Typography>

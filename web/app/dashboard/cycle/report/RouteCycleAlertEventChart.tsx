@@ -185,7 +185,7 @@ const RouteCycleAlertEventChart: React.FunctionComponent<{
                     return (
                       <div
                         ref={ref}
-                        className={tw`grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl`}
+                        className={tw`border-border/50 bg-background grid min-w-32 items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl`}
                       >
                         {payload && payload.length && (
                           <>
@@ -203,7 +203,7 @@ const RouteCycleAlertEventChart: React.FunctionComponent<{
                             </div>
 
                             <div
-                              className={tw`flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground`}
+                              className={tw`[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5`}
                             >
                               <div
                                 className={tw`flex flex-1 justify-between gap-1.5 leading-none`}
@@ -303,7 +303,7 @@ const RouteCycleAlertEventChart: React.FunctionComponent<{
                       <DialogDescription>
                         {dialogState.current.coreColdtag.identifier}
                       </DialogDescription>
-                      <div className="flex flex-row gap-1 text-muted-foreground">
+                      <div className="text-muted-foreground flex flex-row gap-1">
                         <Typography variant="inline-code">
                           {dialogState.current.coreColdtag.id}
                         </Typography>

@@ -280,7 +280,7 @@ const NodeTelemetryEventChart: React.FunctionComponent<{
                       <DialogDescription>
                         {dialogState.current.coreColdtag.identifier}
                       </DialogDescription>
-                      <div className="flex flex-row gap-1 text-muted-foreground">
+                      <div className="text-muted-foreground flex flex-row gap-1">
                         <Typography variant="inline-code">
                           {dialogState.current.coreColdtag.id}
                         </Typography>

@@ -173,7 +173,7 @@ const getTableColumns = ({
 
       return (
         <div className="flex w-[100px] items-center gap-2">
-          <status.icon className="size-4 text-muted-foreground" />
+          <status.icon className="text-muted-foreground size-4" />
           <span>{status.label}</span>
         </div>
       )

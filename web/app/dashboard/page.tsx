@@ -160,7 +160,7 @@ const DashboardPage = () => {
                   }}
                 >
                   <a
-                    className="text-sm font-semibold text-muted-foreground transition hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground text-sm font-semibold transition"
                     href={href}
                   >
                     {label}
@@ -177,7 +177,7 @@ const DashboardPage = () => {
 
         {!state.loading && (
           <div className="flex flex-col gap-y-4 py-4">
-            <span className="p-4 text-xs font-semibold text-muted-foreground">
+            <span className="text-muted-foreground p-4 text-xs font-semibold">
               Statistics for last 60 minutes
             </span>
 
@@ -216,7 +216,7 @@ const DashboardPage = () => {
                       <div className="flex flex-row items-center gap-x-3">
                         <Icon
                           size="2.4rem"
-                          className="rounded-lg border p-2 text-muted-foreground"
+                          className="text-muted-foreground rounded-lg border p-2"
                         />
                         <span className="text-foreground">{title}</span>
                       </div>
@@ -225,7 +225,7 @@ const DashboardPage = () => {
                       <span className="text-foreground-lighter gap-y-0.5 text-sm">
                         Requests
                       </span>
-                      <span className="text-xl font-normal text-foreground">
+                      <span className="text-foreground text-xl font-normal">
                         {data?.length}
                       </span>
                     </CardDescription>

@@ -20,7 +20,7 @@ const InputAlert: React.FC<{
         >
           <Alert
             variant="destructive"
-            className="flex flex-row items-center py-2 text-xs [&>svg]:top-auto [&>svg]:left-auto"
+            className="flex flex-row items-center py-2 text-xs [&>svg]:left-auto [&>svg]:top-auto"
           >
             {Icon && <Icon size="1.2rem" />}
             {title && <AlertTitle>{title}</AlertTitle>}

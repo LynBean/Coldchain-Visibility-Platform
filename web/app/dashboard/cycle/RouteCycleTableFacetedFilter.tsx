@@ -101,14 +101,14 @@ const RouteCycleTableFacetedFilter: React.FC<{
                           : 'border-input [&_svg]:invisible'
                       )}
                     >
-                      <Check className="size-3.5 text-primary-foreground" />
+                      <Check className="text-primary-foreground size-3.5" />
                     </div>
                     {option.icon && (
-                      <option.icon className="size-4 text-muted-foreground" />
+                      <option.icon className="text-muted-foreground size-4" />
                     )}
                     <span>{option.label}</span>
                     {facets?.get(option.value) && (
-                      <span className="ml-auto flex size-4 items-center justify-center font-mono text-xs text-muted-foreground">
+                      <span className="text-muted-foreground ml-auto flex size-4 items-center justify-center font-mono text-xs">
                         {facets.get(option.value)}
                       </span>
                     )}

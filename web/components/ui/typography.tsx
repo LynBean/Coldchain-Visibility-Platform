@@ -4,7 +4,7 @@ import React from 'react'
 const variantMap = {
   h1: {
     component: 'h1',
-    className: cn`scroll-m-20 text-center text-4xl font-extrabold tracking-normal text-balance`,
+    className: cn`scroll-m-20 text-balance text-center text-4xl font-extrabold tracking-normal`,
   },
   h2: {
     component: 'h2',
@@ -28,11 +28,11 @@ const variantMap = {
   },
   'inline-code': {
     component: 'code',
-    className: cn`relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold`,
+    className: cn`bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold`,
   },
   lead: {
     component: 'p',
-    className: cn`text-xl text-muted-foreground`,
+    className: cn`text-muted-foreground text-xl`,
   },
   large: {
     component: 'div',
@@ -40,11 +40,11 @@ const variantMap = {
   },
   small: {
     component: 'small',
-    className: cn`text-sm leading-none font-medium`,
+    className: cn`text-sm font-medium leading-none`,
   },
   muted: {
     component: 'p',
-    className: cn`text-sm text-muted-foreground`,
+    className: cn`text-muted-foreground text-sm`,
   },
 } as const
 

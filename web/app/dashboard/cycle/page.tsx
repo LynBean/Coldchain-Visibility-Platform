@@ -140,7 +140,7 @@ const DashboardCyclePage: React.FC = () => {
     <>
       <AnimatePresence mode="wait">
         <div className="flex h-full w-full flex-col items-center">
-          <div className="flex w-6xl max-w-5/6 flex-col items-center gap-8 py-12">
+          <div className="w-6xl max-w-5/6 flex flex-col items-center gap-8 py-12">
             <div
               className={cn(
                 'flex w-full justify-between',

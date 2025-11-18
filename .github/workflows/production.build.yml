@@ -15,10 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22.x
-          check-latest: true
+          bun-version: "latest"
 
       - uses: docker/login-action@v3
         with:
@@ -53,9 +52,9 @@ jobs:
 
       - name: Generate GraphQL codegen
         run: |
-          npm install @graphql-codegen/cli @graphql-codegen/typescript-generic-sdk
+          bun install @graphql-codegen/cli @graphql-codegen/typescript-generic-sdk
           cd web
-          npm run graphql-codegen:production
+          bun run graphql-codegen:production
 
       - name: Build and Push Web Image
         uses: docker/build-push-action@v6
