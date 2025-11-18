@@ -13,7 +13,9 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #60e6ff;
+
   --radius: 0.75rem;
+
   --card: #ffffff;
   --card-foreground: #093144;
   --popover: #ffffff;
@@ -30,13 +32,20 @@
   --border: rgba(0, 0, 0, 0.12);
   --input: rgba(0, 0, 0, 0.14);
   --ring: #60e6ff;
+
   --chart-1: #00b7b3;
   --chart-2: #ffb27a;
   --chart-3: #0094d1;
   --chart-4: #ffd870;
   --chart-5: #ff7a8a;
+
   --background: #ebfeff;
-  --background-gradient: linear-gradient(135deg, #ebfeff 0%, #d4f4fc 45%, #9ef0ff 100%);
+  --background-gradient: linear-gradient(
+    135deg,
+    #ebfeff 0%,
+    #d4f4fc 45%,
+    #9ef0ff 100%
+  );
   --foreground: #093144;
 }
 
@@ -50,9 +59,11 @@
   --sidebar-accent-foreground: #eafbff;
   --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: #4fd3ff;
+
   --background: #04131f;
   --background-gradient: linear-gradient(135deg, #04131f 0%, #020a11 100%);
   --foreground: #e9f8ff;
+
   --card: #062334;
   --card-foreground: #e9f8ff;
   --popover: #062334;
@@ -69,6 +80,7 @@
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.16);
   --ring: #4fd3ff;
+
   --chart-1: #00d1c9;
   --chart-2: #ffc487;
   --chart-3: #36a6ff;
@@ -85,13 +97,16 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -152,21 +167,22 @@
   }
 }
 
-html,
-body,
-#__next,
-main {
+html {
   min-height: 100%;
+  background-color: var(--background);
+  background-image: var(--background-gradient);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 body,
 #__next,
+#__next > div,
 main {
-  background-color: var(--background) !important;
-  background-image: var(--background-gradient) !important;
-  background-repeat: no-repeat !important;
-  background-size: cover !important;
-  background-attachment: fixed !important;
+  min-height: 100%;
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 .bg-background,
@@ -208,8 +224,14 @@ html:not(.dark) div[role="search"] input {
   backdrop-filter: blur(8px) !important;
 }
 
-html:not(.dark) button:has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]),
-html:not(.dark) button:has(span):has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]) {
+html:not(.dark)
+  button:has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(
+    .dark .sidebar *
+  ):not([class*="bg-primary"]):not([role="combobox"]):not([aria-label]),
+html:not(.dark)
+  button:has(span):has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(
+    .dark .sidebar *
+  ):not([class*="bg-primary"]):not([role="combobox"]):not([aria-label]) {
   background-color: rgba(255, 255, 255, 0.45) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
@@ -231,8 +253,11 @@ html:not(.dark) button[aria-label="Last"] {
 html:not(.dark) div[role="combobox"],
 html:not(.dark) select,
 html:not(.dark) button[data-state][role="combobox"] {
-  background-color: rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(6px) !important;
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
 }
 
 html:not(.dark) button:has(svg[data-theme-icon]) {
@@ -245,16 +270,17 @@ html:not(.dark)
     input[type="search"],
     input[placeholder="Search"],
     div[role="search"] input,
-    button:has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]),
-    button:has(span):has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(.dark .sidebar *):not([class*="bg-primary"]),
+    button:has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(
+      .dark .sidebar *
+    ):not([class*="bg-primary"]):not([role="combobox"]):not([aria-label]),
+    button:has(span):has(svg):not(:where(table thead button)):not(.bg-sidebar *):not(.sidebar *):not(
+      .dark .sidebar *
+    ):not([class*="bg-primary"]):not([role="combobox"]):not([aria-label]),
     table thead th,
     button[aria-label="Previous"],
     button[aria-label="Next"],
     button[aria-label="First"],
     button[aria-label="Last"],
-    div[role="combobox"],
-    select,
-    button[data-state][role="combobox"],
     button:has(svg[data-theme-icon])
   ) {
   border: 1px solid rgba(185, 238, 255, 0.9) !important;
@@ -271,4 +297,66 @@ table thead div[role="button"] {
   -webkit-backdrop-filter: none !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+html:not(.dark) .bg-dialog {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+
+.dark .bg-dialog {
+  background-color: #062334 !important;
+  background-image: none !important;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+html:not(.dark) .bg-dialog button[aria-label="Close"],
+html:not(.dark) .bg-dialog button[aria-label="close"],
+html:not(.dark) .bg-dialog button[role="combobox"],
+html:not(.dark) .bg-dialog div[role="combobox"],
+html:not(.dark) .bg-dialog select {
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
+}
+
+.dark .bg-dialog button[aria-label="Close"],
+.dark .bg-dialog button[aria-label="close"],
+.dark .bg-dialog button[role="combobox"],
+.dark .bg-dialog div[role="combobox"],
+.dark .bg-dialog select {
+  background-color: #062334 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
+}
+
+html:not(.dark) .sheet button[aria-label],
+html:not(.dark) .bg-dialog button[aria-label] {
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+html:not(.dark)
+  .sheet
+  :is(button[role="combobox"], div[role="combobox"], select),
+html:not(.dark)
+  .bg-dialog
+  :is(button[role="combobox"], div[role="combobox"], select) {
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
 }
