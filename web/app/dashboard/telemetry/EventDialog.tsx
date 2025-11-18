@@ -23,7 +23,7 @@ const EventDialog: React.FunctionComponent<
         }
       }}
     >
-      <DialogContent className="w-lg max-w-11/12 rounded">
+      <DialogContent className="w-lg max-w-11/12 text-foreground rounded bg-white shadow-xl dark:bg-[#062334] dark:text-white">
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
           {props.description}
