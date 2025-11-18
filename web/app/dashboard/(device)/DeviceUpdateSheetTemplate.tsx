@@ -30,7 +30,7 @@ const DeviceUpdateSheetTemplate: React.FC<
         }
       }}
     >
-      <DialogContent className="w-lg max-w-11/12 rounded">
+      <DialogContent className="w-lg max-w-11/12 rounded bg-dialog">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
