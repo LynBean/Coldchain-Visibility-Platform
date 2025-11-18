@@ -12,6 +12,9 @@ services:
         - path: web
           target: /app
           action: sync
+        - path: web/app/global.css
+          target: /app/global.css
+          action: sync+restart
         - path: web/package.json
           target: /app/package.json
           action: sync+restart
