@@ -191,7 +191,7 @@ const RouteCycleUpdateSheet: React.FC<{
         }
       }}
     >
-      <DialogContent className="h-7/9 w-lg max-w-11/12 flex flex-col rounded">
+      <DialogContent className="bg-dialog flex h-7/9 w-lg max-w-11/12 flex-col rounded">
         <DialogHeader>
           <DialogTitle>Update route cycle</DialogTitle>
           <DialogDescription>
