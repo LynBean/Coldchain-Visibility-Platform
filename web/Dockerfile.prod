@@ -8,7 +8,7 @@ COPY --chown=app:app . .
 
 ENV ENV=production
 
-RUN bun install --production
+RUN bun install
 
 RUN bun run build
 
