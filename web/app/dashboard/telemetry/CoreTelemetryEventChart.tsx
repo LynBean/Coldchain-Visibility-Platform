@@ -23,6 +23,7 @@ import { Battery, Clock, LocateFixed } from 'lucide-react'
 import React from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import EventDialog from './EventDialog.tsx'
+import MiniMap from './MiniMap.tsx'
 
 const CoreTelemetryEventChart: React.FunctionComponent<{
   events: Cvp_DashboardTelemetry_DisplayCoreColdtagByIdQuery['displayCoreColdtag']['byId']['telemetryEvents']
@@ -197,18 +198,43 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
                     </DialogDescription>
                   ),
                 },
-                {
-                  className: 'col-span-2',
-                  icon: <LocateFixed />,
-                  title: 'Coordinate',
-                  description: dialogState.current.coordinate ? (
-                    <DialogDescription>
-                      {`${dialogState.current.coordinate.latitude}, ${dialogState.current.coordinate.longitude}`}
-                    </DialogDescription>
-                  ) : (
-                    <DialogDescription>Not Available</DialogDescription>
-                  ),
-                },
+                ...(() => {
+                  if (dialogState.current.coordinate == null) {
+                    return [
+                      {
+                        className: 'col-span-2',
+                        icon: <LocateFixed />,
+                        title: 'Coordinate',
+                        description: <DialogDescription>Not Available</DialogDescription>,
+                      },
+                    ]
+                  }
+                  return [
+                    {
+                      className: 'col-span-2',
+                      icon: <LocateFixed />,
+                      title: 'Coordinate',
+                      description: (
+                        <DialogDescription>
+                          {`${dialogState.current.coordinate.latitude}, ${dialogState.current.coordinate.longitude}`}
+                        </DialogDescription>
+                      ),
+                    },
+                    {
+                      className: 'col-span-2',
+                      description: (
+                        <MiniMap
+                          points={[
+                            {
+                              latitude: dialogState.current.coordinate.latitude,
+                              longitude: dialogState.current.coordinate.longitude,
+                            },
+                          ]}
+                        />
+                      ),
+                    },
+                  ]
+                })(),
               ] as {
                 className?: string
                 icon: React.ReactNode
@@ -217,9 +243,9 @@ const CoreTelemetryEventChart: React.FunctionComponent<{
               }[]
             ).map(({ className, icon, title, description }, index) => (
               <Item key={index} className={className} variant="outline">
-                <ItemMedia variant="icon">{icon}</ItemMedia>
+                {icon && <ItemMedia variant="icon">{icon}</ItemMedia>}
                 <ItemContent>
-                  <ItemTitle>{title}</ItemTitle>
+                  {title && <ItemTitle>{title}</ItemTitle>}
                   {description}
                 </ItemContent>
               </Item>

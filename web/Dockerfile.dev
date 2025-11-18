@@ -13,5 +13,5 @@ USER root
 EXPOSE 3000
 
 ENTRYPOINT [ "sh", "-c", \
-    "bun install --force && bun run dev" \
+    "bun install && bun run dev" \
     ]

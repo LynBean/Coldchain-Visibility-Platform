@@ -32,6 +32,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Braces, Cpu } from 'lucide-react'
 import React from 'react'
 import CoreTelemetryEventChart from './CoreTelemetryEventChart.tsx'
+import MiniMap from './MiniMap.tsx'
 import NodeAlertEventChart from './NodeAlertEventChart.tsx'
 import NodeTelemetryEventChart from './NodeTelemetryEventChart.tsx'
 
@@ -144,7 +145,7 @@ const DashboardChartsPage = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="flex flex-col px-4">
+      <div className="flex flex-col gap-4 px-8">
         {state.selected && (
           <motion.div
             key="device-selected-group"
@@ -183,7 +184,7 @@ const DashboardChartsPage = () => {
                 return (
                   <motion.div
                     key="skeleton-corecoldtag"
-                    className="h-64 w-full pt-8"
+                    className="h-64 w-full"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -197,7 +198,7 @@ const DashboardChartsPage = () => {
                   <>
                     <motion.div
                       key="skeleton-nodecoldtag"
-                      className="h-64 w-full pt-8"
+                      className="h-64 w-full"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -207,7 +208,7 @@ const DashboardChartsPage = () => {
 
                     <motion.div
                       key="skeleton-nodecoldtag-2"
-                      className="h-64 w-full pt-8"
+                      className="h-64 w-full"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -250,15 +251,48 @@ const DashboardChartsPage = () => {
               }
 
               return (
-                <motion.div
-                  key="chart-corecoldtag"
-                  className="w-full pt-8"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <CoreTelemetryEventChart events={state.current.telemetryEvents} />
-                </motion.div>
+                <>
+                  <motion.div
+                    key="chart-corecoldtag"
+                    className="flex w-full flex-col gap-4 rounded-xl border p-4 shadow-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="grid flex-1 gap-1 px-2">
+                      <span className="font-semibold leading-none tracking-tight">
+                        Coordinates
+                      </span>
+                      <span className="text-muted-foreground text-sm">
+                        Showing coordinates from all events
+                      </span>
+                    </div>
+
+                    <MiniMap
+                      style={{ height: '16rem' }}
+                      points={state.current.telemetryEvents.flatMap(({ coordinate }) =>
+                        coordinate
+                          ? [
+                              {
+                                latitude: coordinate.latitude,
+                                longitude: coordinate.longitude,
+                              },
+                            ]
+                          : []
+                      )}
+                    />
+                  </motion.div>
+
+                  <motion.div
+                    key="chart-corecoldtag-2"
+                    className="w-full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <CoreTelemetryEventChart events={state.current.telemetryEvents} />
+                  </motion.div>
+                </>
               )
             }
 
@@ -295,35 +329,105 @@ const DashboardChartsPage = () => {
               return (
                 <>
                   {state.current.telemetryEvents.length > 0 && (
-                    <motion.div
-                      key="chart-nodecoldtag"
-                      className="w-full pt-8"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <NodeTelemetryEventChart events={state.current.telemetryEvents} />
-                    </motion.div>
+                    <>
+                      <motion.div
+                        key="chart-nodecoldtag"
+                        className="bg-card flex w-full flex-col gap-4 rounded-xl border p-4 shadow-lg"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <div className="grid flex-1 gap-1 px-2">
+                          <span className="font-semibold leading-none tracking-tight">
+                            Telemetry
+                          </span>
+                          <span className="text-muted-foreground text-sm">
+                            Showing coordinates from all telemetry events
+                          </span>
+                        </div>
+
+                        <MiniMap
+                          style={{ height: '16rem' }}
+                          points={state.current.telemetryEvents.flatMap(
+                            ({ coordinate }) =>
+                              coordinate
+                                ? [
+                                    {
+                                      latitude: coordinate.latitude,
+                                      longitude: coordinate.longitude,
+                                    },
+                                  ]
+                                : []
+                          )}
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        key="chart-nodecoldtag-2"
+                        className="w-full"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <NodeTelemetryEventChart events={state.current.telemetryEvents} />
+                      </motion.div>
+                    </>
                   )}
 
                   {[
                     ...state.current.alertLiquidEvents,
                     ...state.current.alertImpactEvents,
                   ].length > 0 && (
-                    <motion.div
-                      key="chart-nodecoldtag-2"
-                      className="w-full pt-8"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <NodeAlertEventChart
-                        events={[
-                          ...state.current.alertLiquidEvents,
-                          ...state.current.alertImpactEvents,
-                        ]}
-                      />
-                    </motion.div>
+                    <>
+                      <motion.div
+                        key="chart-nodecoldtag-3"
+                        className="bg-card flex w-full flex-col gap-4 rounded-xl border p-4 shadow-lg"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <div className="grid flex-1 gap-1 px-2">
+                          <span className="font-semibold leading-none tracking-tight">
+                            Alerts
+                          </span>
+                          <span className="text-muted-foreground text-sm">
+                            Showing coordinates from all alert events
+                          </span>
+                        </div>
+
+                        <MiniMap
+                          style={{ height: '16rem' }}
+                          points={[
+                            ...state.current.alertLiquidEvents,
+                            ...state.current.alertImpactEvents,
+                          ].flatMap(({ coordinate }) =>
+                            coordinate
+                              ? [
+                                  {
+                                    latitude: coordinate.latitude,
+                                    longitude: coordinate.longitude,
+                                  },
+                                ]
+                              : []
+                          )}
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        key="chart-nodecoldtag-4"
+                        className="w-full"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <NodeAlertEventChart
+                          events={[
+                            ...state.current.alertLiquidEvents,
+                            ...state.current.alertImpactEvents,
+                          ]}
+                        />
+                      </motion.div>
+                    </>
                   )}
                 </>
               )

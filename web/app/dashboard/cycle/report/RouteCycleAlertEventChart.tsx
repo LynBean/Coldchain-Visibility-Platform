@@ -30,6 +30,7 @@ import RechartsPrimitive, {
   YAxis,
 } from 'recharts'
 import EventDialog from '../../telemetry/EventDialog.tsx'
+import MiniMap from '../../telemetry/MiniMap.tsx'
 
 const RouteCycleAlertEventChart: React.FunctionComponent<{
   events: (
@@ -314,29 +315,54 @@ const RouteCycleAlertEventChart: React.FunctionComponent<{
                     </div>
                   ),
                 },
-                {
-                  className: 'col-span-2',
-                  icon: <LocateFixed />,
-                  title: 'Coordinate',
-                  description: dialogState.current.coordinate ? (
-                    <DialogDescription>
-                      {`${dialogState.current.coordinate.latitude}, ${dialogState.current.coordinate.longitude}`}
-                    </DialogDescription>
-                  ) : (
-                    <DialogDescription>Not Available</DialogDescription>
-                  ),
-                },
+                ...(() => {
+                  if (dialogState.current.coordinate == null) {
+                    return [
+                      {
+                        className: 'col-span-2',
+                        icon: <LocateFixed />,
+                        title: 'Coordinate',
+                        description: <DialogDescription>Not Available</DialogDescription>,
+                      },
+                    ]
+                  }
+                  return [
+                    {
+                      className: 'col-span-2',
+                      icon: <LocateFixed />,
+                      title: 'Coordinate',
+                      description: (
+                        <DialogDescription>
+                          {`${dialogState.current.coordinate.latitude}, ${dialogState.current.coordinate.longitude}`}
+                        </DialogDescription>
+                      ),
+                    },
+                    {
+                      className: 'col-span-2',
+                      description: (
+                        <MiniMap
+                          points={[
+                            {
+                              latitude: dialogState.current.coordinate.latitude,
+                              longitude: dialogState.current.coordinate.longitude,
+                            },
+                          ]}
+                        />
+                      ),
+                    },
+                  ]
+                })(),
               ] as {
                 className?: string
-                icon: React.ReactNode
-                title: string | undefined
+                icon?: React.ReactNode
+                title?: string | undefined
                 description?: string | React.ReactNode | undefined
               }[]
             ).map(({ className, icon, title, description }, index) => (
               <Item key={index} className={className} variant="outline">
-                <ItemMedia variant="icon">{icon}</ItemMedia>
+                {icon && <ItemMedia variant="icon">{icon}</ItemMedia>}
                 <ItemContent>
-                  <ItemTitle>{title}</ItemTitle>
+                  {title && <ItemTitle>{title}</ItemTitle>}
                   {description}
                 </ItemContent>
               </Item>

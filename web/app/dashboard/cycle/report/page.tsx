@@ -36,6 +36,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import {
   Braces,
   CircleOff,
+  ClockFading,
   Container,
   Cpu,
   Droplets,
@@ -43,12 +44,15 @@ import {
   LocateFixed,
   PlaneLanding,
   PlaneTakeoff,
+  ServerCrash,
   Thermometer,
   User,
 } from 'lucide-react'
 import React from 'react'
+import MiniMap from '../../telemetry/MiniMap.tsx'
 import NodeAlertEventChart from '../../telemetry/NodeAlertEventChart.tsx'
 import NodeTelemetryEventChart from '../../telemetry/NodeTelemetryEventChart.tsx'
+import { statuses } from '../RouteCycleTable.tsx'
 import RouteCycleAlertEventChart from './RouteCycleAlertEventChart.tsx'
 import RouteCyclePrintReport from './RouteCyclePrintReport.tsx'
 
@@ -148,7 +152,7 @@ const DashboardChartsPage = () => {
     </Select>
   )
 
-  const RouteCycleInfo: React.FC = () => {
+  const RouteOverview: React.FC = () => {
     return (
       <div className="grid grid-cols-2 gap-2 py-4">
         {(
@@ -228,11 +232,56 @@ const DashboardChartsPage = () => {
                 <ItemDescription>Not Available</ItemDescription>
               ),
             },
+            (() => {
+              const status = (() => {
+                if (state.current?.canceled) {
+                  return statuses['canceled']
+                }
+                if (state.current?.completed) {
+                  return statuses['completed']
+                }
+                if (state.current?.started) {
+                  return statuses['inProgress']
+                }
+                return statuses['pending']
+              })()
+              return {
+                icon: <status.icon className="text-gray-500" />,
+                title: 'Status',
+                description: <ItemDescription>{status.label}</ItemDescription>,
+              }
+            })(),
+          ] as {
+            className?: string
+            icon: React.ReactNode
+            title: string | undefined
+            description?: string | React.ReactNode | undefined
+          }[]
+        ).map(({ className, icon, title, description }, index) => (
+          <Item key={index} className={className} variant="outline">
+            <ItemMedia variant="icon">{icon}</ItemMedia>
+            <ItemContent>
+              <ItemTitle>{title}</ItemTitle>
+              {description}
+            </ItemContent>
+          </Item>
+        ))}
+      </div>
+    )
+  }
+
+  const HardwareSettings: React.FC = () => {
+    return (
+      <div className="grid grid-cols-2 gap-2 py-4">
+        {(
+          [
             {
+              // TODO(Victor): Temp. Range
               icon: <Thermometer className="text-red-600" />,
-              title: 'Max Temp.',
+              title: 'Temp. Range',
               description: state.current?.temperatureAlertThreshold ? (
                 <ItemDescription>
+                  {`${state.current.temperatureAlertThreshold - 16} °C`} -{' '}
                   {`${state.current.temperatureAlertThreshold} °C`}
                 </ItemDescription>
               ) : (
@@ -244,13 +293,26 @@ const DashboardChartsPage = () => {
               title: 'Max Humid.',
               description: state.current?.humidityAlertThreshold ? (
                 <ItemDescription>
-                  {`${state.current.humidityAlertThreshold} °C`}
+                  ≤ {state.current.humidityAlertThreshold} %
                 </ItemDescription>
               ) : (
                 <ItemDescription>Not Available</ItemDescription>
               ),
             },
             {
+              // TODO(Victor): Shock
+              icon: <ServerCrash className="text-yellow-600" />,
+              title: 'Shock Threshold',
+              description: <ItemDescription>2.6 g</ItemDescription>,
+            },
+            {
+              // TODO(Victor): Sampling rate
+              icon: <ClockFading className="text-green-600" />,
+              title: 'Sampling rate',
+              description: <ItemDescription>5 mins</ItemDescription>,
+            },
+            {
+              className: 'col-span-2',
               icon: <Cpu className="text-purple-800" />,
               title: 'Node Info',
               description: (
@@ -432,8 +494,61 @@ const DashboardChartsPage = () => {
           }
 
           return (
-            <>
-              <RouteCycleInfo />
+            <div className="flex flex-col gap-4 py-8">
+              <div className="bg-card rounded-2xl border p-4 shadow-sm">
+                <span className="font-semibold leading-none tracking-tight">
+                  Route Overview
+                </span>
+                <RouteOverview />
+              </div>
+
+              <div className="bg-card rounded-2xl border p-4 shadow-sm">
+                <span className="font-semibold leading-none tracking-tight">
+                  Hardware Settings
+                </span>
+                <HardwareSettings />
+              </div>
+
+              {[
+                ...state.current.telemetryEvents,
+                ...state.current.alertLiquidEvents,
+                ...state.current.alertImpactEvents,
+              ].length && (
+                <motion.div
+                  key="map"
+                  className="bg-card flex w-full flex-col gap-4 rounded-xl border p-4 shadow-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="grid flex-1 gap-1 px-2">
+                    <span className="font-semibold leading-none tracking-tight">
+                      Coordinates
+                    </span>
+                    <span className="text-muted-foreground text-sm">
+                      Showing coordinates from all events
+                    </span>
+                  </div>
+
+                  <MiniMap
+                    style={{ height: '16rem' }}
+                    points={[
+                      ...state.current.telemetryEvents,
+                      ...state.current.alertLiquidEvents,
+                      ...state.current.alertImpactEvents,
+                    ].flatMap(({ coordinate }) =>
+                      coordinate
+                        ? [
+                            {
+                              latitude: coordinate.latitude,
+                              longitude: coordinate.longitude,
+                            },
+                          ]
+                        : []
+                    )}
+                  />
+                </motion.div>
+              )}
 
               {[
                 ...state.current.alertTemperatureEvents,
@@ -441,7 +556,7 @@ const DashboardChartsPage = () => {
               ].length > 0 && (
                 <motion.div
                   key="chart-cycle"
-                  className="w-full pt-8"
+                  className="w-full"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -458,7 +573,7 @@ const DashboardChartsPage = () => {
               {state.current.telemetryEvents.length > 0 && (
                 <motion.div
                   key="chart-cycle-2"
-                  className="w-full pt-8"
+                  className="w-full"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -471,7 +586,7 @@ const DashboardChartsPage = () => {
                 .length > 0 && (
                 <motion.div
                   key="chart-cycle-3"
-                  className="w-full pt-8"
+                  className="w-full"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -484,7 +599,7 @@ const DashboardChartsPage = () => {
                   />
                 </motion.div>
               )}
-            </>
+            </div>
           )
         })()}
       </div>

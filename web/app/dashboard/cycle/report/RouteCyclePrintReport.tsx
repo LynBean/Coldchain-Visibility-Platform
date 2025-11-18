@@ -85,12 +85,13 @@ const RouteCyclePrintReport: React.FC<{
                     value: data?.placedAt,
                   },
                   {
-                    label: 'Max Temp.',
-                    value: `${data?.temperatureAlertThreshold} °C`,
+                    // TODO(Victor): Temp. Range
+                    label: 'Temp. Range',
+                    value: `${(data?.temperatureAlertThreshold ?? 0) - 16} °C - ${data?.temperatureAlertThreshold} °C`,
                   },
                   {
                     label: 'Max Humid.',
-                    value: data?.humidityAlertThreshold,
+                    value: `≤ ${data?.humidityAlertThreshold} %`,
                   },
                   {
                     label: 'Status',
@@ -175,7 +176,7 @@ const RouteCyclePrintReport: React.FC<{
                   <TableRow key={index}>
                     <TableCell className="font-medium">{id}</TableCell>
                     <TableCell>{temperature?.toLocaleString()} °C</TableCell>
-                    <TableCell>{humidity?.toLocaleString()}</TableCell>
+                    <TableCell>{humidity?.toLocaleString()} %</TableCell>
                     <TableCell>
                       {new Date(eventTime).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -211,7 +212,7 @@ const RouteCyclePrintReport: React.FC<{
                           (sum, event) => sum + (event.humidity ?? 0),
                           0
                         ) / data.telemetryEvents.length
-                      ).toLocaleString()} °C`
+                      ).toLocaleString()} %`
                     : 'Not Available'}
                 </TableCell>
               </TableRow>
@@ -289,7 +290,7 @@ const RouteCyclePrintReport: React.FC<{
                 ({ id, humidity, eventTime, coordinate }, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium">{id}</TableCell>
-                    <TableCell>{humidity.toLocaleString()}</TableCell>
+                    <TableCell>{humidity.toLocaleString()} %</TableCell>
                     <TableCell>
                       {new Date(eventTime).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -310,12 +311,12 @@ const RouteCyclePrintReport: React.FC<{
                 <TableCell colSpan={1}>Average</TableCell>
                 <TableCell>
                   {data
-                    ? (
+                    ? `${(
                         data.alertHumidityEvents.reduce(
                           (sum, event) => sum + (event.humidity ?? 0),
                           0
                         ) / data.alertHumidityEvents.length
-                      ).toLocaleString()
+                      ).toLocaleString()} %`
                     : 'Not Available'}
                 </TableCell>
               </TableRow>
