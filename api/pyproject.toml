@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.116.1",
     "loguru>=0.7.3",
     "numpy>=2.3.2",
+    "orjson>=3.11.4",
     "redis>=6.4.0",
     "strawberry-graphql[fastapi]>=0.278.1",
     "supabase>=2.18.1",

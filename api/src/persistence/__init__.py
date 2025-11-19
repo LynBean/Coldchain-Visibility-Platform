@@ -68,15 +68,5 @@ class BasePersistence:
         self._redis: Redis = app.extra["redis"]
 
     async def _commit(self, command: Callable[[asyncpg.Connection], Awaitable[T]], /) -> T:
-        async with self._pool.acquire() as client:
-            try:
-                await client.execute("BEGIN")
-                result = await command(client)
-                await client.execute("COMMIT")
-
-            except asyncpg.exceptions.PostgresError:
-                await client.execute("ROLLBACK")
-                raise
-
-            else:
-                return result
+        async with self._pool.acquire() as client, client.transaction():
+            return await command(client)

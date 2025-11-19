@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from typing import cast
 
+import orjson
 from asyncpg import Connection as PgConnection
 from asyncpg import Pool as PgPool
 from asyncpg import Record as PgRecord
@@ -94,29 +95,36 @@ class CoreColdtagPersistence(BasePersistence):
         )
 
     async def find_core_by_id(self, coldtag_id: str, /) -> PersistedCoreColdtag | None:
+        cache_key = f"core_coldtag_by_id:{coldtag_id}"
+        cached = await self._redis.get(cache_key)
+
         async def __query(client: PgConnection) -> CoreColdtagSchema | None:
             row = cast(
                 "PgRecord",
                 await client.fetchrow(
                     """
-                    SELECT * FROM core_coldtag
-                    WHERE id = $1
+                        SELECT * FROM core_coldtag
+                        WHERE id = $1
                     """,
                     int(coldtag_id),
                 ),
             )
-            if not row:
+            if row is None:
                 return None
 
+            await self._redis.set(cache_key, orjson.dumps(dict(row)))
             return CoreColdtagSchema(**row)
 
-        core_coldtag_schema = await self._commit(__query)
-        if core_coldtag_schema is None:
+        schema = CoreColdtagSchema(**orjson.loads(cached)) if cached else await self._commit(__query)
+        if schema is None:
             return None
 
-        return await PersistedCoreColdtag.construct_model(self._app, core_coldtag_schema)
+        return await PersistedCoreColdtag.construct_model(self._app, schema)
 
     async def find_core_by_mac_address(self, mac_address: str, /) -> PersistedCoreColdtag | None:
+        cache_key = f"core_coldtag_by_mac_address:{mac_address}"
+        cached = await self._redis.get(cache_key)
+
         async def __query(client: PgConnection) -> CoreColdtagSchema | None:
             row = cast(
                 "PgRecord",
@@ -128,43 +136,48 @@ class CoreColdtagPersistence(BasePersistence):
                     mac_address,
                 ),
             )
-            if not row:
+            if row is None:
                 return None
 
+            await self._redis.set(cache_key, orjson.dumps(dict(row)))
             return CoreColdtagSchema(**row)
 
-        core_coldtag_schema = await self._commit(__query)
-        if core_coldtag_schema is None:
+        schema = CoreColdtagSchema(**orjson.loads(cached)) if cached else await self._commit(__query)
+        if schema is None:
             return None
 
-        return await PersistedCoreColdtag.construct_model(self._app, core_coldtag_schema)
+        return await PersistedCoreColdtag.construct_model(self._app, schema)
 
     async def find_core_events_by_core_id(self, core_id: str, /) -> list[PersistedCoreColdtagEvent]:
-        async def __query(client: PgConnection) -> list[PersistedCoreColdtagEvent]:
+        cache_key = f"core_coldtag_events_by_core_id:{core_id}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[CoreColdtagEventSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM core_coldtag_event
                     WHERE core_coldtag_id = $1
-                    """,
+                """,
                 int(core_id),
             )
+            await self._redis.set(cache_key, orjson.dumps([dict(r) for r in rows]))
+            return [CoreColdtagEventSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedCoreColdtagEvent]",
-                await asyncio.gather(
-                    *[
-                        PersistedCoreColdtagEvent.construct_model(self._app, CoreColdtagEventSchema(**row))
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [CoreColdtagEventSchema(**row) for row in orjson.loads(cached)] if cached else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedCoreColdtagEvent]",
+            await asyncio.gather(*[PersistedCoreColdtagEvent.construct_model(self._app, schema) for schema in schemas]),
+        )
 
     async def find_core_events_all_by_time_range(
         self, /, a: datetime, b: datetime | None = None
     ) -> list[PersistedCoreColdtagEvent]:
-        async def __query(client: PgConnection) -> list[PersistedCoreColdtagEvent]:
+        cache_key = f"core_coldtag_events_all_by_time_range:{a.timestamp()}:{b.timestamp() if b is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[CoreColdtagEventSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM core_coldtag_event
@@ -174,22 +187,24 @@ class CoreColdtagPersistence(BasePersistence):
                 a,
                 b,
             )
-            return cast(
-                "list[PersistedCoreColdtagEvent]",
-                await asyncio.gather(
-                    *[
-                        PersistedCoreColdtagEvent.construct_model(self._app, CoreColdtagEventSchema(**row))
-                        for row in rows
-                    ]
-                ),
-            )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [CoreColdtagEventSchema(**row) for row in rows]
 
-        return await self._commit(__query)
+        schemas = (
+            [CoreColdtagEventSchema(**row) for row in orjson.loads(cached)] if cached else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedCoreColdtagEvent]",
+            await asyncio.gather(*[PersistedCoreColdtagEvent.construct_model(self._app, schema) for schema in schemas]),
+        )
 
     async def find_core_event_by_closest_time(
         self, core_id: str, /, time: datetime
     ) -> PersistedCoreColdtagEvent | None:
-        async def __query(client: PgConnection) -> PersistedCoreColdtagEvent | None:
+        cache_key = f"core_coldtag_events_by_closest_time:{core_id}:{time.timestamp()}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> CoreColdtagEventSchema:
             row = cast(
                 "PgRecord",
                 await client.fetchrow(
@@ -203,12 +218,11 @@ class CoreColdtagPersistence(BasePersistence):
                     time,
                 ),
             )
-            if row is None:
-                return None
+            await self._redis.setex(cache_key, 10, orjson.dumps(dict(row)))
+            return CoreColdtagEventSchema(**row)
 
-            return await PersistedCoreColdtagEvent.construct_model(self._app, CoreColdtagEventSchema(**row))
-
-        return await self._commit(__query)
+        schema = CoreColdtagEventSchema(**orjson.loads(cached)) if cached else await self._commit(__query)
+        return await PersistedCoreColdtagEvent.construct_model(self._app, schema)
 
     async def create_core(self, *, mac_address: str, identifier: str | None = None) -> PersistedCoreColdtag:
         assert _is_valid_mac_address(mac_address), "Invalid MAC Address."
@@ -284,6 +298,10 @@ class CoreColdtagPersistence(BasePersistence):
             )
 
         await self._commit(__query)
+
+        cache_keys = [f"core_coldtag_by_id:{core_id}", f"core_coldtag_by_mac_address:{persisted_core.mac_address}"]
+        await self._redis.delete(*cache_keys)
+
         updated_persisted_core = await self.find_core_by_id(core_id)
         assert updated_persisted_core is not None
         return updated_persisted_core
@@ -324,4 +342,8 @@ class CoreColdtagPersistence(BasePersistence):
             return CoreColdtagEventSchema(**row)
 
         schema = await self._commit(__query)
+
+        cache_keys = [f"core_coldtag_events_by_core_id:{core_id}"]
+        await self._redis.delete(*cache_keys)
+
         return await PersistedCoreColdtagEvent.construct_model(self._app, schema)

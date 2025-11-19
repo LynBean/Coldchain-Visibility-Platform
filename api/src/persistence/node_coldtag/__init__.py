@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from typing import cast
 
+import orjson
 from asyncpg import Connection as PgConnection
 from asyncpg import Pool as PgPool
 from asyncpg import Record as PgRecord
@@ -149,6 +150,9 @@ class NodeColdtagPersistence(BasePersistence):
         )
 
     async def find_node_by_id(self, coldtag_id: str, /) -> PersistedNodeColdtag | None:
+        cache_key = f"node_coldtag_by_id:{coldtag_id}"
+        cached = await self._redis.get(cache_key)
+
         async def __query(client: PgConnection) -> NodeColdtagSchema | None:
             row = cast(
                 "PgRecord",
@@ -160,18 +164,22 @@ class NodeColdtagPersistence(BasePersistence):
                     int(coldtag_id),
                 ),
             )
-            if not row:
+            if row is None:
                 return None
 
+            await self._redis.set(cache_key, orjson.dumps(dict(row)))
             return NodeColdtagSchema(**row)
 
-        node_coldtag_schema = await self._commit(__query)
-        if node_coldtag_schema is None:
+        schema = NodeColdtagSchema(**orjson.loads(cached)) if cached else await self._commit(__query)
+        if schema is None:
             return None
 
-        return await PersistedNodeColdtag.construct_model(self._app, node_coldtag_schema)
+        return await PersistedNodeColdtag.construct_model(self._app, schema)
 
     async def find_node_by_mac_address(self, mac_address: str, /) -> PersistedNodeColdtag | None:
+        cache_key = f"node_coldtag_by_mac_address:{mac_address}"
+        cached = await self._redis.get(cache_key)
+
         async def __query(client: PgConnection) -> NodeColdtagSchema | None:
             row = cast(
                 "PgRecord",
@@ -183,43 +191,48 @@ class NodeColdtagPersistence(BasePersistence):
                     mac_address,
                 ),
             )
-            if not row:
+            if row is None:
                 return None
 
+            await self._redis.set(cache_key, orjson.dumps(dict(row)))
             return NodeColdtagSchema(**row)
 
-        node_coldtag_schema = await self._commit(__query)
-        if node_coldtag_schema is None:
+        schema = NodeColdtagSchema(**orjson.loads(cached)) if cached else await self._commit(__query)
+        if schema is None:
             return None
 
-        return await PersistedNodeColdtag.construct_model(self._app, node_coldtag_schema)
+        return await PersistedNodeColdtag.construct_model(self._app, schema)
 
     async def find_node_events_by_node_id(self, node_id: str, /) -> list[PersistedNodeColdtagEvent]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
+        cache_key = f"node_coldtag_events_by_node_id:{node_id}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event
                     WHERE node_coldtag_id = $1
-                    """,
+                """,
                 int(node_id),
             )
+            await self._redis.set(cache_key, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEvent]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEvent.construct_model(self._app, NodeColdtagEventSchema(**row))
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventSchema(**row) for row in orjson.loads(cached)] if cached else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEvent]",
+            await asyncio.gather(*[PersistedNodeColdtagEvent.construct_model(self._app, schema) for schema in schemas]),
+        )
 
     async def find_node_events_all_by_time_range(
-        self, a: datetime, b: datetime | None = None
+        self, /, a: datetime, b: datetime | None = None
     ) -> list[PersistedNodeColdtagEvent]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
+        cache_key = f"node_coldtag_events_all_by_time_range:{a.timestamp()}:{b.timestamp() if b is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event
@@ -229,23 +242,24 @@ class NodeColdtagPersistence(BasePersistence):
                 a,
                 b,
             )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEvent]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEvent.construct_model(self._app, NodeColdtagEventSchema(**row))
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventSchema(**row) for row in orjson.loads(cached)] if cached else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEvent]",
+            await asyncio.gather(*[PersistedNodeColdtagEvent.construct_model(self._app, schema) for schema in schemas]),
+        )
 
     async def find_node_events_by_time_range(
         self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
     ) -> list[PersistedNodeColdtagEvent]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEvent]:
+        cache_key = f"node_coldtag_events_by_time_range:{node_id}:{dispatch_time.timestamp()}:{completion_time.timestamp() if completion_time is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event
@@ -257,49 +271,53 @@ class NodeColdtagPersistence(BasePersistence):
                 dispatch_time,
                 completion_time,
             )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEvent]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEvent.construct_model(self._app, NodeColdtagEventSchema(**row))
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventSchema(**row) for row in orjson.loads(cached)] if cached else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEvent]",
+            await asyncio.gather(*[PersistedNodeColdtagEvent.construct_model(self._app, schema) for schema in schemas]),
+        )
 
     async def find_node_event_alert_impacts_by_node_id(
         self, node_id: str, /
     ) -> list[PersistedNodeColdtagEventAlertImpact]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertImpact]:
+        cache_key = f"node_coldtag_event_alert_impacts_by_node_id:{node_id}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventAlertImpactSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event_alert_impact
                     WHERE node_coldtag_id = $1
-                    """,
+                """,
                 int(node_id),
             )
+            await self._redis.set(cache_key, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventAlertImpactSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEventAlertImpact]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEventAlertImpact.construct_model(
-                            self._app, NodeColdtagEventAlertImpactSchema(**row)
-                        )
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventAlertImpactSchema(**row) for row in orjson.loads(cached)]
+            if cached
+            else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEventAlertImpact]",
+            await asyncio.gather(
+                *[PersistedNodeColdtagEventAlertImpact.construct_model(self._app, schema) for schema in schemas]
+            ),
+        )
 
     async def find_node_event_alert_impacts_all_by_time_range(
-        self, a: datetime, b: datetime | None = None
+        self, /, a: datetime, b: datetime | None = None
     ) -> list[PersistedNodeColdtagEventAlertImpact]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertImpact]:
+        cache_key = f"node_coldtag_event_alert_impacts_all_by_time_range:{a.timestamp()}:{b.timestamp() if b is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventAlertImpactSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event_alert_impact
@@ -309,25 +327,28 @@ class NodeColdtagPersistence(BasePersistence):
                 a,
                 b,
             )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventAlertImpactSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEventAlertImpact]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEventAlertImpact.construct_model(
-                            self._app, NodeColdtagEventAlertImpactSchema(**row)
-                        )
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventAlertImpactSchema(**row) for row in orjson.loads(cached)]
+            if cached
+            else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEventAlertImpact]",
+            await asyncio.gather(
+                *[PersistedNodeColdtagEventAlertImpact.construct_model(self._app, schema) for schema in schemas]
+            ),
+        )
 
     async def find_node_event_alert_impacts_by_time_range(
         self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
     ) -> list[PersistedNodeColdtagEventAlertImpact]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertImpact]:
+        cache_key = f"node_coldtag_event_alert_impacts_by_time_range:{node_id}:{dispatch_time.timestamp()}:{completion_time.timestamp() if completion_time is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventAlertImpactSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event_alert_impact
@@ -339,51 +360,57 @@ class NodeColdtagPersistence(BasePersistence):
                 dispatch_time,
                 completion_time,
             )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventAlertImpactSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEventAlertImpact]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEventAlertImpact.construct_model(
-                            self._app, NodeColdtagEventAlertImpactSchema(**row)
-                        )
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventAlertImpactSchema(**row) for row in orjson.loads(cached)]
+            if cached
+            else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEventAlertImpact]",
+            await asyncio.gather(
+                *[PersistedNodeColdtagEventAlertImpact.construct_model(self._app, schema) for schema in schemas]
+            ),
+        )
 
     async def find_node_event_alert_liquids_by_node_id(
         self, node_id: str, /
     ) -> list[PersistedNodeColdtagEventAlertLiquid]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertLiquid]:
+        cache_key = f"node_coldtag_event_alert_liquids_by_node_id:{node_id}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventAlertLiquidSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event_alert_liquid
                     WHERE node_coldtag_id = $1
-                    """,
+                """,
                 int(node_id),
             )
+            await self._redis.set(cache_key, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventAlertLiquidSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEventAlertLiquid]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEventAlertLiquid.construct_model(
-                            self._app, NodeColdtagEventAlertLiquidSchema(**row)
-                        )
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventAlertLiquidSchema(**row) for row in orjson.loads(cached)]
+            if cached
+            else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEventAlertLiquid]",
+            await asyncio.gather(
+                *[PersistedNodeColdtagEventAlertLiquid.construct_model(self._app, schema) for schema in schemas]
+            ),
+        )
 
     async def find_node_event_alert_liquids_all_by_time_range(
         self, /, a: datetime, b: datetime | None = None
     ) -> list[PersistedNodeColdtagEventAlertLiquid]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertLiquid]:
+        cache_key = f"node_coldtag_event_alert_liquids_all_by_time_range:{a.timestamp()}:{b.timestamp() if b is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventAlertLiquidSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event_alert_liquid
@@ -393,25 +420,28 @@ class NodeColdtagPersistence(BasePersistence):
                 a,
                 b,
             )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventAlertLiquidSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEventAlertLiquid]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEventAlertLiquid.construct_model(
-                            self._app, NodeColdtagEventAlertLiquidSchema(**row)
-                        )
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventAlertLiquidSchema(**row) for row in orjson.loads(cached)]
+            if cached
+            else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEventAlertLiquid]",
+            await asyncio.gather(
+                *[PersistedNodeColdtagEventAlertLiquid.construct_model(self._app, schema) for schema in schemas]
+            ),
+        )
 
     async def find_node_event_alert_liquids_by_time_range(
         self, node_id: str, /, dispatch_time: datetime, completion_time: datetime | None = None
     ) -> list[PersistedNodeColdtagEventAlertLiquid]:
-        async def __query(client: PgConnection) -> list[PersistedNodeColdtagEventAlertLiquid]:
+        cache_key = f"node_coldtag_event_alert_liquids_by_time_range:{node_id}:{dispatch_time.timestamp()}:{completion_time.timestamp() if completion_time is not None else None}"
+        cached = await self._redis.get(cache_key)
+
+        async def __query(client: PgConnection) -> list[NodeColdtagEventAlertLiquidSchema]:
             rows = await client.fetch(
                 """
                     SELECT * FROM node_coldtag_event_alert_liquid
@@ -423,20 +453,20 @@ class NodeColdtagPersistence(BasePersistence):
                 dispatch_time,
                 completion_time,
             )
+            await self._redis.setex(cache_key, 10, orjson.dumps([dict(r) for r in rows]))
+            return [NodeColdtagEventAlertLiquidSchema(**row) for row in rows]
 
-            return cast(
-                "list[PersistedNodeColdtagEventAlertLiquid]",
-                await asyncio.gather(
-                    *[
-                        PersistedNodeColdtagEventAlertLiquid.construct_model(
-                            self._app, NodeColdtagEventAlertLiquidSchema(**row)
-                        )
-                        for row in rows
-                    ]
-                ),
-            )
-
-        return await self._commit(__query)
+        schemas = (
+            [NodeColdtagEventAlertLiquidSchema(**row) for row in orjson.loads(cached)]
+            if cached
+            else await self._commit(__query)
+        )
+        return cast(
+            "list[PersistedNodeColdtagEventAlertLiquid]",
+            await asyncio.gather(
+                *[PersistedNodeColdtagEventAlertLiquid.construct_model(self._app, schema) for schema in schemas]
+            ),
+        )
 
     async def create_node(self, *, mac_address: str, identifier: str | None = None) -> PersistedNodeColdtag:
         assert _is_valid_mac_address(mac_address), "Invalid MAC Address."
@@ -515,6 +545,10 @@ class NodeColdtagPersistence(BasePersistence):
             )
 
         await self._commit(__query)
+
+        cache_keys = [f"node_coldtag_by_id:{node_id}", f"node_coldtag_by_mac_address:{persisted_node.mac_address}"]
+        await self._redis.delete(*cache_keys)
+
         updated_persisted_node = await self.find_node_by_id(node_id)
         assert updated_persisted_node is not None
         return updated_persisted_node
@@ -563,6 +597,10 @@ class NodeColdtagPersistence(BasePersistence):
             return NodeColdtagEventSchema(**row)
 
         schema = await self._commit(__query)
+
+        cache_keys = [f"node_coldtag_events_by_node_id:{node_id}"]
+        await self._redis.delete(*cache_keys)
+
         return await PersistedNodeColdtagEvent.construct_model(self._app, schema)
 
     async def create_node_event_alert_liquid(
@@ -601,6 +639,10 @@ class NodeColdtagPersistence(BasePersistence):
             return NodeColdtagEventAlertLiquidSchema(**row)
 
         schema = await self._commit(__query)
+
+        cache_keys = [f"node_coldtag_event_alert_liquids_by_node_id:{node_id}"]
+        await self._redis.delete(*cache_keys)
+
         return await PersistedNodeColdtagEventAlertLiquid.construct_model(self._app, schema)
 
     async def create_node_event_alert_impact(
@@ -639,4 +681,8 @@ class NodeColdtagPersistence(BasePersistence):
             return NodeColdtagEventAlertImpactSchema(**row)
 
         schema = await self._commit(__query)
+
+        cache_keys = [f"node_coldtag_event_alert_impacts_by_node_id:{node_id}"]
+        await self._redis.delete(*cache_keys)
+
         return await PersistedNodeColdtagEventAlertImpact.construct_model(self._app, schema)
