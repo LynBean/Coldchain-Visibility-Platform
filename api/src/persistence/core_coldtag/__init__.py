@@ -204,7 +204,7 @@ class CoreColdtagPersistence(BasePersistence):
         cache_key = f"core_coldtag_events_by_closest_time:{core_id}:{time.timestamp()}"
         cached = await self._redis.get(cache_key)
 
-        async def __query(client: PgConnection) -> CoreColdtagEventSchema:
+        async def __query(client: PgConnection) -> CoreColdtagEventSchema | None:
             row = cast(
                 "PgRecord",
                 await client.fetchrow(
@@ -218,10 +218,16 @@ class CoreColdtagPersistence(BasePersistence):
                     time,
                 ),
             )
+            if row is None:
+                return None
+
             await self._redis.setex(cache_key, 10, orjson.dumps(dict(row)))
             return CoreColdtagEventSchema(**row)
 
         schema = CoreColdtagEventSchema(**orjson.loads(cached)) if cached else await self._commit(__query)
+        if schema is None:
+            return None
+
         return await PersistedCoreColdtagEvent.construct_model(self._app, schema)
 
     async def create_core(self, *, mac_address: str, identifier: str | None = None) -> PersistedCoreColdtag:
